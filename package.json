@@ -1,0 +1,15 @@
+{
+  "name": "dogtimer-cordova",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cordova wrapper for Dog Stopwatch",
+  "scripts": {
+    "build:android": "cordova build android",
+    "platform:add": "cordova platform add android",
+    "prepare:android": "cordova platform add android@12"
+  },
+  "devDependencies": {
+    "cordova": "^12.0.0",
+    "cordova-android": "^12.0.1"
+  }
+}

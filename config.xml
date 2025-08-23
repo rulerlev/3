@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.you.dogtimer" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Dog Stopwatch</name>
+    <description>Simple stopwatch with your dog on background</description>
+    <author email="you@example.com">You</author>
+    <content src="index.html" />
+    <preference name="SplashScreenDelay" value="0" />
+    <platform name="android">
+        <icon density="mdpi" src="www/icon-192.png" />
+        <icon density="xxxhdpi" src="www/icon-512.png" />
+        <allow-intent href="market:*" />
+    </platform>
+    <access origin="*" />
+    <allow-navigation href="*" />
+</widget>
