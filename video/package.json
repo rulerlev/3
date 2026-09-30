@@ -1,0 +1,17 @@
+{
+  "name": "training-log-video",
+  "private": true,
+  "type": "module",
+  "description": "Клип «Журнал обучения»: музыка и картинка, сгенерированные кодом",
+  "scripts": {
+    "music": "python3 music/compose.py",
+    "preview": "npx http-server -c-1 -p 5173 .",
+    "render": "node render.mjs video --fps 30 --out out/clip.mp4",
+    "render:60": "node render.mjs video --fps 60 --out out/clip-60.mp4",
+    "stills": "node render.mjs stills",
+    "sheet": "node render.mjs sheet"
+  },
+  "dependencies": {
+    "playwright-core": "^1.55.0"
+  }
+}

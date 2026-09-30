@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Журнал обучения</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #050505;
+        color: #9c978f;
+        font: 13px/1.4 ui-monospace, monospace;
+        overflow: hidden;
+      }
+      #wrap {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+      canvas {
+        width: min(100vw, calc(100vh * 16 / 9));
+        aspect-ratio: 16 / 9;
+        display: block;
+      }
+      #ui {
+        position: fixed;
+        left: 12px;
+        bottom: 10px;
+        user-select: none;
+      }
+      body.render #ui,
+      body.hide #ui {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrap"><canvas id="c"></canvas></div>
+    <div id="ui">
+      <span id="info">загрузка…</span> · пробел — пуск/пауза · ←/→ ±1 с · [ ] — сцены · h — скрыть
+    </div>
+    <audio id="a" src="public/track.wav" preload="auto"></audio>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
