@@ -6,14 +6,15 @@ export default function build({ THREE, lib, meta }) {
   const camera = new THREE.PerspectiveCamera(38, 16 / 9, 0.1, 3000);
   scene.fog = new THREE.FogExp2('#c89a6a', 0.0025);
   const C = meta.cues;
-  const T_A2 = 4.1, T_HORN = 4.25, T_COL = 5.35;
+  const T_A2 = 4.1, T_HORN = 4.25, T_COL = 5.35, CA = 2.5; // CA — азимут камеры на Иерихон (сторона, освещённая солнцем)
+  const pol = (a, r, y) => [Math.cos(a) * r, y, Math.sin(a) * r];
 
   const sky = lib.skyDome({ top: '#3a5a80', horizon: '#f0b070', bottom: '#5a4030', sunDir: [-1, 0.12, -0.4], sunColor: '#ffd6a0', sunSize: 0.03, sunGlow: 1.0, stars: 0 });
   scene.add(sky);
   const hemi = new THREE.HemisphereLight('#9ab4d8', '#4a3424', 0.6); scene.add(hemi);
   const sun = new THREE.DirectionalLight('#ffcf98', 2.2); sun.position.set(-300, 80, -120); scene.add(sun);
   const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), eul = new THREE.Euler();
-  const colA = new THREE.Color();
+  const colA = new THREE.Color(), WHITE = new THREE.Color(1, 1, 1);
 
   const pplGeo = new THREE.LatheGeometry([[0, 0], [.34, 0], [.3, .5], [.22, 1.05], [.25, 1.3], [.12, 1.44], [.11, 1.52], [.12, 1.62], [.08, 1.72], [0, 1.76]].map(([x, y]) => new THREE.Vector2(x, y)), 7);
 
@@ -55,7 +56,7 @@ export default function build({ THREE, lib, meta }) {
       wall.setColorAt(blocks.length - 1, new THREE.Color('#b8966a').multiplyScalar(0.85 + r() * 0.2));
     }
     // порядок обрушения: сначала сторона к камере, потом по кругу
-    blocks.forEach((b) => { const da = Math.abs(Math.atan2(Math.sin(b.a - 0.55), Math.cos(b.a - 0.55))); b.tc = T_COL + da * 0.35 + b.r1 * 0.25 + (b.j > 0.9 ? -0.1 : 0.1); });
+    blocks.forEach((b) => { const da = Math.abs(Math.atan2(Math.sin(b.a - CA), Math.cos(b.a - CA))); b.tc = T_COL + da * 0.35 + b.r1 * 0.25 + (b.j > 0.9 ? -0.1 : 0.1); });
   }
   gA.add(wall);
   // дома внутри
@@ -90,13 +91,13 @@ export default function build({ THREE, lib, meta }) {
   // пыль обрушения
   const dustTex = [lib.cloudTexture(91), lib.cloudTexture(92), lib.cloudTexture(93)];
   const dusts = []; { const r = rng(5); for (let i = 0; i < 42; i++) { const a = (i + r()) / 42 * Math.PI * 2; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: dustTex[i % 3], color: '#c8a87e', transparent: true, depthWrite: false, opacity: 0 }));
-    const da = Math.abs(Math.atan2(Math.sin(a - 0.55), Math.cos(a - 0.55))); sp.userData = { a, tc: T_COL + da * 0.35 + 0.2 + r() * 0.3, s: 14 + r() * 10, r: r() }; gA.add(sp); dusts.push(sp); } }
+    const da = Math.abs(Math.atan2(Math.sin(a - CA), Math.cos(a - CA))); sp.userData = { a, tc: T_COL + da * 0.35 + 0.2 + r() * 0.3, s: 14 + r() * 10, r: r() }; gA.add(sp); dusts.push(sp); } }
   const dustMotes = lib.motes({ count: 900, box: [110, 25, 110], center: [0, 8, 0], size: 10, color: '#e0c49a', speed: 0.6, opacity: 0 }); gA.add(dustMotes);
 
   // ================= B: круг из пяти камней =================
   const gB = new THREE.Group(); scene.add(gB);
-  gB.add(lib.terrain({ size: 500, seg: 100, heightFn: (x, z) => fbm(x * 0.01, z * 0.01, 4) * 8 * clamp((Math.hypot(x, z) - 14) / 40) - 0.1 + fbm(x * 0.2, z * 0.2, 2) * 0.12, colorFn: (x, z, y, sl) => new THREE.Color('#2a2a24').lerp(new THREE.Color('#14140f'), clamp(sl * 2 + noise2(x * 0.1, z * 0.1) * 0.4)) }));
-  const SR = 8.5; const WORDS = ['Грех', 'Враг', 'Вопль', 'Избавитель', 'Мир'];
+  gB.add(lib.terrain({ size: 500, seg: 100, heightFn: (x, z) => fbm(x * 0.01, z * 0.01, 4) * 8 * clamp((Math.hypot(x, z) - 14) / 40) - 0.1 + fbm(x * 0.2, z * 0.2, 2) * 0.12, colorFn: (x, z, y, sl) => new THREE.Color('#4a4a3a').lerp(new THREE.Color('#24241a'), clamp(sl * 2 + noise2(x * 0.1, z * 0.1) * 0.4)) }));
+  const SR = 8.5; const WORDS = ['ГРЕХ', 'ВРАГ', 'ВОПЛЬ', 'ИЗБАВИТЕЛЬ', 'МИР'];
   const SCOL = ['#e04a32', '#ff6a20', '#7aa6ff', '#ffd27a', '#b8f0d0'].map((c) => new THREE.Color(c));
   const stones = [];
   const stoneAng = (i) => Math.PI / 2 - i / 5 * Math.PI * 2; // по часовой, если смотреть сверху
@@ -105,13 +106,13 @@ export default function build({ THREE, lib, meta }) {
     for (let v = 0; v < p.count; v++) { const x = p.getX(v), y = p.getY(v), z = p.getZ(v); const n = noise2(x * 1.3 + i * 10, y * 1.1) * 0.12;
       const taper = 1 - Math.max(0, y - 1) * 0.08; p.setXYZ(v, x * taper + n, y + (y > 2.2 ? noise2(x * 2 + i, 3) * 0.35 : 0), z * taper + noise2(y * 1.5, x + i) * 0.06); }
     geo.translate(0, 2.2, 0); geo.computeVertexNormals();
-    const st = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: '#6a665c', roughness: 0.95, flatShading: true }));
-    const a = stoneAng(i); const grp = new THREE.Group(); grp.position.set(Math.cos(a) * SR, -0.2, Math.sin(a) * SR); grp.lookAt(0, -0.2, 0); grp.rotation.z = (r() - .5) * 0.08; grp.add(st);
-    const px = WORDS[i].length > 6 ? 120 : 170;
-    const mkTxt = (back) => { const tp = lib.textPlane([WORDS[i]], { width: 1.7, height: 0.6, px, color: '#ffffff', font: 'GaramondSC' }); tp.material.color.setScalar(0.05); tp.material.fog = false; tp.position.set(0, 2.9, back ? -0.43 : 0.43); if (back) tp.rotation.y = Math.PI; grp.add(tp); return tp; };
+    const st = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: '#8a867a', roughness: 0.95, flatShading: true }));
+    const a = stoneAng(i); const grp = new THREE.Group(); grp.position.set(Math.cos(a) * SR, -0.2, Math.sin(a) * SR); grp.lookAt(0, -0.2, 0); grp.rotateZ((r() - .5) * 0.08); grp.add(st);
+    const px = WORDS[i].length > 6 ? 125 : 240;
+    const mkTxt = (back) => { const tp = lib.textPlane([WORDS[i]], { width: 1.75, height: 0.6, px, color: '#ffffff', font: 'Garamond' }); tp.material.color.setScalar(0.05); tp.material.fog = false; tp.position.set(0, 2.9, back ? -0.53 : 0.53); if (back) tp.rotation.y = Math.PI; grp.add(tp); return tp; };
     const front = mkTxt(false), back = mkTxt(true);
     const halo = lib.glow(SCOL[i], 7, 0); halo.position.set(0, 2.6, 0.9); grp.add(halo);
-    const light = new THREE.PointLight(SCOL[i], 0, 18, 1.6); light.position.set(0, 3, 2.2); grp.add(light);
+    const light = new THREE.PointLight(SCOL[i], 0, 18, 1.6); light.position.set(0, 3.5, 4.5); grp.add(light);
     gB.add(grp); stones.push({ grp, st, front, back, halo, light, a });
   }
   // светящийся след на земле по кругу
@@ -129,7 +130,7 @@ export default function build({ THREE, lib, meta }) {
   const orbCore = lib.glow('#ffffff', 1.0, 1); gB.add(orbCore);
   const orbLight = new THREE.PointLight('#ffd8a0', 0, 30, 1.4); gB.add(orbLight);
   const starsB = lib.starfield({ count: 4000, radius: 1400, size: 2.2, minY: 0.03 }); gB.add(starsB);
-  const mistB = lib.motes({ count: 700, box: [60, 6, 60], center: [0, 1.5, 0], size: 10, color: '#8a9ab8', speed: 0.2, opacity: 0.25 }); gB.add(mistB);
+  const mistB = lib.motes({ count: 700, box: [60, 6, 60], center: [0, 1.5, 0], size: 5, color: '#8a9ab8', speed: 0.2, opacity: 0.25 }); gB.add(mistB);
   // ключевые моменты: индекс камня (непрерывный) по времени — точно по словам
   const LOOPK = [[C.loop, 5], [14.2, 6], [15.34, 7], [17.34, 8], [19.38, 9], [20.11, 10]];
   const orbIdx = (t, lead = 0.65) => {
@@ -176,17 +177,17 @@ export default function build({ THREE, lib, meta }) {
       gA.visible = shot === 0; gB.visible = shot === 1; gC.visible = shot === 2;
       if (shot === 0) {
         sky.u.top.value.set('#4a6a90'); sky.u.horizon.value.set('#f2b878'); sky.u.bottom.value.set('#6a4a32'); sky.u.sunDir.value.set(-1, 0.1, -0.5).normalize(); sky.u.sunGlow.value = 1.0; sky.u.starAmt.value = 0;
-        scene.fog.color.set('#d8a878'); scene.fog.density = 0.0022;
+        scene.fog.color.set('#d8a878'); scene.fog.density = 0.0011;
         hemi.color.set('#9ab4d8'); hemi.groundColor.set('#4a3424'); hemi.intensity = 0.7; sun.color.set('#ffcf98'); sun.intensity = 2.4; sun.position.set(-300, 70, -150);
         // процессия
         const walkA = t < T_HORN ? t : T_HORN + (t - T_HORN) * 0.15;
-        priests.forEach((f, i) => { const a = 0.95 - i * 0.075 + walkA * 0.022; f.position.set(Math.cos(a) * PR, 0, Math.sin(a) * PR); f.position.y = plainH(f.position.x, f.position.z);
+        priests.forEach((f, i) => { const a = CA + 0.3 - i * 0.075 + walkA * 0.022; f.position.set(Math.cos(a) * PR, 0, Math.sin(a) * PR); f.position.y = plainH(f.position.x, f.position.z);
           const face = t < T_HORN ? -a + Math.PI : -a + Math.PI / 2 + Math.PI; f.rotation.y = lerp(-a + Math.PI, Math.atan2(-f.position.x, -f.position.z), ramp(t, T_HORN - 0.3, 0.6));
           lib.walkPose(f, walkA * 0.9 + i * 0.3, 1 - ramp(t, T_HORN - 0.3, 0.4));
           const up = ramp(t, T_HORN - 0.2, 0.5) * (0.6 + 0.4 * Math.sin(t * 2 + i)); f.parts.arms[1].rotation.x = lerp(-0.6, -1.6, up); f.parts.arms[0].rotation.x = lerp(f.parts.arms[0].rotation.x, -1.3, up);
           f.userData.horn.rotation.z = 0.6 + up * 0.6; });
-        { const a = 0.95 - 8 * 0.075 + walkA * 0.022; ark.position.set(Math.cos(a) * PR, plainH(Math.cos(a) * PR, Math.sin(a) * PR) + Math.abs(Math.sin(walkA * 6)) * 0.04, Math.sin(a) * PR); ark.rotation.y = -a; }
-        for (let i = 0; i < NA; i++) { const [r1, r2, r3] = armyD[i]; const a = 0.95 - 9 * 0.075 - r1 * 1.6 + walkA * 0.022; const rr = PR + (r2 - .5) * 6; const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
+        { const a = CA + 0.3 - 8 * 0.075 + walkA * 0.022; ark.position.set(Math.cos(a) * PR, plainH(Math.cos(a) * PR, Math.sin(a) * PR) + Math.abs(Math.sin(walkA * 6)) * 0.04, Math.sin(a) * PR); ark.rotation.y = -a; }
+        for (let i = 0; i < NA; i++) { const [r1, r2, r3] = armyD[i]; const a = CA + 0.3 - 9 * 0.075 - r1 * 1.6 + walkA * 0.022; const rr = PR + (r2 - .5) * 6; const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
           tmpP.set(x, plainH(x, z) + Math.abs(Math.sin(walkA * 5 + r3 * 9)) * 0.05 * (t < T_HORN ? 1 : 0), z); tmpQ.setFromEuler(eul.set(0, -a + Math.PI, 0)); tmpS.setScalar(1.0 + r3 * 0.15); army.setMatrixAt(i, tmpM.compose(tmpP, tmpQ, tmpS)); }
         army.instanceMatrix.needsUpdate = true;
         // стены: дрожь → обрушение
@@ -208,31 +209,31 @@ export default function build({ THREE, lib, meta }) {
           sp.material.opacity = (t > d.tc ? ramp(t, d.tc, 0.25) : 0) * (1 - k * 0.4) * 0.95; sp.material.rotation = d.r * 6 + e * 0.4; });
         dustMotes.u.opacity.value = ramp(t, T_COL + 0.3, 1.5) * 0.5;
         S.post.exposure = 1.0; S.post.bloom = 0.45; S.post.bloomThreshold = 0.85; S.post.sat = 1.05;
-        if (t < T_A2) cameraPath(camera, [[0, [150, 70, 150], [0, 4, 0]], [T_A2, [118, 48, 150], [0, 4, 0]]], t);
-        else cameraPath(camera, [[T_A2, [Math.cos(0.62) * 72, 2.6, Math.sin(0.62) * 72], [Math.cos(0.5) * 36, 6.5, Math.sin(0.5) * 36]], [C.cycle, [Math.cos(0.66) * 80, 4.6, Math.sin(0.66) * 80], [Math.cos(0.5) * 36, 5, Math.sin(0.5) * 36]]], t);
+        if (t < T_A2) cameraPath(camera, [[0, pol(CA - 0.55, 150, 62), [0, 2, 0]], [T_A2, pol(CA - 0.35, 118, 40), [0, 3, 0]]], t);
+        else cameraPath(camera, [[T_A2, pol(CA + 0.06, 96, 3.2), pol(CA - 0.04, 36, 6.5)], [C.cycle, pol(CA + 0.1, 104, 5.0), pol(CA - 0.04, 36, 4.5)]], t);
         const shake = ramp(t, T_COL, 0.2) * (1 - ramp(t, T_COL + 1.2, 1.2));
         handheld(camera, t * (1 + shake * 8), 0.004 + shake * 0.025);
       } else if (shot === 1) {
-        sky.u.top.value.set('#03050c'); sky.u.horizon.value.set('#1a1e2c'); sky.u.bottom.value.set('#050506'); sky.u.sunGlow.value = 0; sky.u.starAmt.value = 0.6;
-        scene.fog.color.set('#0c0e14'); scene.fog.density = 0.012;
-        hemi.color.set('#5a6a90'); hemi.groundColor.set('#0a0a08'); hemi.intensity = 0.35; sun.intensity = 0.25; sun.color.set('#8aa0d0'); sun.position.set(100, 200, -200);
+        sky.u.top.value.set('#040814'); sky.u.horizon.value.set('#26304a'); sky.u.bottom.value.set('#07080a'); sky.u.sunGlow.value = 0; sky.u.starAmt.value = 0.6;
+        scene.fog.color.set('#121828'); scene.fog.density = 0.009;
+        hemi.color.set('#5a6a90'); hemi.groundColor.set('#0a0a08'); hemi.intensity = 1.6; sun.intensity = 3.2; sun.color.set('#9ab0e0'); sun.position.set(-120, 160, -200);
         const idx = orbIdx(t); const theta = stoneAng(0) - idx / 5 * Math.PI * 2;
         const ci = ((Math.round(idx) % 5) + 5) % 5; const frac = idx - Math.floor(idx);
         const oc = colA.copy(SCOL[Math.floor(idx) % 5]).lerp(SCOL[(Math.floor(idx) + 1) % 5], frac);
         const appear = ramp(t, C.cycle + 0.3, 1.0);
-        const orbR = SR - 1.6, orbY = 2.7 + Math.sin(t * 2.2) * 0.12;
+        const orbR = SR, orbY = 5.4 + Math.sin(t * 2.2) * 0.12;
         orb.position.set(Math.cos(theta) * orbR, orbY, Math.sin(theta) * orbR); orbCore.position.copy(orb.position); orbLight.position.copy(orb.position);
-        orb.material.color.copy(oc); orb.material.opacity = appear * 0.9; orbCore.material.opacity = appear * 0.8; orbLight.color.copy(oc); orbLight.intensity = appear * 30;
-        orb.scale.setScalar(3.2 * (1 + 0.08 * Math.sin(t * 5)));
+        orb.material.color.copy(oc); orb.material.opacity = appear * 0.9; orbCore.material.opacity = appear * 0.8; orbLight.color.copy(oc); orbLight.intensity = appear * 9;
+        orb.scale.setScalar(2.6 * (1 + 0.08 * Math.sin(t * 5)));
         ringU.orb.value = theta; ringU.amt.value = appear * 0.9; ringU.color.value.copy(oc);
         const lapReset = t > 19.86;
         stones.forEach((s, i) => {
           let d = Math.abs(((idx - i) % 5 + 7.5) % 5 - 2.5); const near = Math.exp(-d * d * 6);
           let visited = 0; if (t >= C.loop && !lapReset) { const vi = LOOPK.findIndex(([, k]) => ((k % 5) === i)); if (vi >= 0 && t >= LOOPK[vi][0]) visited = 0.22; }
           const L = Math.max(near * appear, visited);
-          const c = colA.copy(SCOL[i]).multiplyScalar(0.05 + L * 2.4);
+          const c = colA.copy(SCOL[i]).lerp(WHITE, 0.45).multiplyScalar(0.04 + L * 3.2);
           s.front.material.color.copy(c); s.back.material.color.copy(c);
-          s.halo.material.opacity = L * 0.55; s.light.intensity = L * 22;
+          s.halo.material.opacity = L * 0.16; s.light.intensity = L * 5;
         });
         starsB.u.opacity.value = 0.8; mistB.u.opacity.value = 0.22;
         S.post.exposure = 1.05; S.post.bloom = 0.85; S.post.bloomThreshold = 0.6; S.post.sat = 1.0;
@@ -240,10 +241,10 @@ export default function build({ THREE, lib, meta }) {
           const a = lerp(0.9, 0.4, ease((t - C.cycle) / (C.loop - C.cycle)));
           camera.position.set(Math.cos(a) * lerp(30, 21, ease((t - C.cycle) / 5)), lerp(26, 13, ease((t - C.cycle) / 5)), Math.sin(a) * lerp(30, 21, ease((t - C.cycle) / 5))); camera.lookAt(0, 0.5, 0);
         } else {
-          const ci2 = orbIdx(t, 1.2); const th = stoneAng(0) - ci2 / 5 * Math.PI * 2; const k = ramp(t, C.loop, 1.0);
-          const camR = lerp(-21, -5.5, k), camY = lerp(13, 4.6, k);
+          const ci2 = orbIdx(t - 0.35, 0.9); const th = stoneAng(0) - ci2 / 5 * Math.PI * 2; const k = ramp(t, C.loop, 1.0);
+          const camR = lerp(-21, -3.5, k), camY = lerp(13, 3.0, k);
           camera.position.set(Math.cos(th) * camR, camY, Math.sin(th) * camR);
-          camera.lookAt(Math.cos(th) * SR * lerp(0, 1, k), lerp(0.5, 2.3, k), Math.sin(th) * SR * lerp(0, 1, k));
+          camera.lookAt(Math.cos(th) * SR * lerp(0, 1, k), lerp(0.5, 3.4, k), Math.sin(th) * SR * lerp(0, 1, k));
         }
         handheld(camera, t, 0.004);
       } else {

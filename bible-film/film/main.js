@@ -54,7 +54,7 @@ function placeholder(E) {
 }
 
 async function init() {
-  timeline = await (await fetch('../data/timeline.json')).json();
+  timeline = await (await fetch('../data/' + (qs.get('tl') || 'timeline.json'))).json();
   const bible = await (await fetch('../data/bible.json')).json();
   const stats = await (await fetch('../data/stats.json')).json();
   const exact = await (await fetch('../data/exact.json')).json();

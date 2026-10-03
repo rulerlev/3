@@ -76,12 +76,12 @@ for sc in script['scenes']:
         lines.append(dict(v=l['v'], t=l['t'], ref=l.get('ref'), refName=(f"{books[l['ref'].split()[0]]['name']} {l['ref'].split()[1]}" if l.get('ref') else None),
                           wav=path, at=round(start, 3), start=round(t, 3), end=round(t + b - a, 3), words=words))
         if l.get('cue'): cues[l['cue']] = round(t, 3)
-        t += (b - a) + l.get('post', 0.55 if l['v'] == 'n' else 0.9)
+        t += (b - a) + l.get('post', 0.8 if l['v'] == 'n' else 1.25)
     dur = max(t + sc.get('post', 1.0), sc.get('minDur', 0))
     timeline['scenes'].append(dict(id=sc['id'], start=round(T, 3), dur=round(dur, 3), book=sc['book'], bookName=books[sc['book']]['name'],
                                    chapter=sc['chapter'], cues=cues, lines=lines))
     T += dur
 timeline['total'] = round(T, 3)
-json.dump(timeline, open('data/timeline.json', 'w'), ensure_ascii=False, indent=1)
+json.dump(timeline, open(os.environ.get('TIMELINE_OUT', 'data/timeline.json'), 'w'), ensure_ascii=False, indent=1)
 for s in timeline['scenes']: print(f"{s['id']:13s} {s['start']:7.1f} {s['dur']:6.1f}")
 print('TOTAL', round(T, 1), 's =', f"{int(T//60)}:{T%60:04.1f}")

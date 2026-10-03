@@ -24,7 +24,7 @@ async function openPage(browser) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   page.on('console', (m) => { if (['error', 'warning'].includes(m.type())) console.log('[page]', m.text()); });
   page.on('pageerror', (e) => console.log('[pageerror]', e.message));
-  await page.goto(`http://localhost:${PORT}/film/index.html?w=${W}&h=${H}`);
+  await page.goto(`http://localhost:${PORT}/film/index.html?w=${W}&h=${H}${args.tl ? '&tl=' + args.tl : ''}`);
   await page.waitForFunction(() => window.ready || window.initError, null, { timeout: 120000 });
   const err = await page.evaluate(() => window.initError); if (err) throw new Error(err);
   return page;
@@ -54,7 +54,7 @@ if (args.preview) {
 
 // полный рендер: сегменты не пересекают границы сцен (правка сцены → перерендер только её сегментов)
 const probe = await launch(); const pp = await openPage(probe); const FRAMES = await pp.evaluate(() => window.FRAMES); await probe.close();
-const TLD = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/timeline.json'))); const FPS = TLD.fps;
+const TLD = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', args.tl || 'timeline.json'))); const FPS = TLD.fps;
 const only = args.scenes ? String(args.scenes).split(',') : null; const SEG = +(args.seg || 240), WORKERS = +(args.workers || 3);
 const segs = []; let from = 0, to = 0;
 TLD.scenes.forEach((sc, i) => {
