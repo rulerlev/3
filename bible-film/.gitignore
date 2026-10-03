@@ -5,3 +5,4 @@ data/verses.json
 data/timeline_next.json
 !video/*.mp4
 voice_samples/
+__pycache__/
