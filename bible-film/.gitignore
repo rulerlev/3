@@ -4,3 +4,4 @@ data/verses.json
 *.mp4
 data/timeline_next.json
 !video/*.mp4
+voice_samples/
