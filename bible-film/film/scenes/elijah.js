@@ -32,14 +32,14 @@ export default function build({ THREE, lib, meta }) {
       return col('#6a6036').lerp(col('#8a7a4e'), n * 0.6).lerp(col('#6e5e50'), clamp(sl * 2.2)).lerp(col('#4a3e36'), clamp((-y - 20) / 80)).multiplyScalar(0.85 + n * 0.25); } });
   scene.add(land);
   const sea = lib.ocean({ size: 2600, seg: 110, deep: '#0a1a28', shallow: '#244050', sky: '#e09060', amp: 0.4, choppy: 0.8, sunDir: SUN.toArray(), sunColor: '#ffc080' });
-  sea.position.set(0, -146, -1000);
+  sea.position.set(0, -146, -1000); scene.add(sea);
   const sky = lib.skyDome({ top: '#2a4470', horizon: '#f0a060', bottom: '#3a2418', sunDir: SUN.toArray(), sunColor: '#ffc880', sunSize: 0.022, sunGlow: 1.0, radius: 1800 });
   scene.add(sky);
   const stars = lib.starfield({ count: 3000, radius: 1700, size: 2.2, minY: 0.05, seed: 9 }); stars.u.opacity.value = 0; scene.add(stars);
   const sun = new THREE.DirectionalLight('#ffc890', 2.6); scene.add(sun, sun.target);
-  sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 300 }); sun.shadow.bias = -0.0008;
+  sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 300 }); sun.shadow.bias = -0.0008;
   const hemi = new THREE.HemisphereLight('#8aa0c8', '#4a3424', 0.7); scene.add(hemi);
-  const clouds = lib.cloudLayer({ count: 9, area: [1400, 700], y: 240, scale: [300, 80], seed: 5, color: '#ffd0b0', opacity: 0.4, center: [0, -650] });
+  const clouds = lib.cloudLayer({ count: 9, area: [1400, 700], y: 240, scale: [300, 80], seed: 5, color: '#ffd0b0', opacity: 0.4, center: [0, -650] }); scene.add(clouds);
 
   // =====================================================================
   // КАРМИЛ: толпы, жертвенники
