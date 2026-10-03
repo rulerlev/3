@@ -16,10 +16,12 @@ export default function build({ THREE, lib, W, H, meta }) {
   // ================= МОРЕ И ОСТРОВ =================
   const isle = add(scene, new THREE.Group());
   const sea = add(isle, lib.ocean({ size: 1800, seg: 150, deep: '#01040a', shallow: '#04101a', sky: '#0c1424', amp: 0.7, choppy: 1.0, foam: 0.15, sunDir: [0.05, 0.1, 1], sunColor: '#000' }));
-  const islandH = (x, z) => {
-    const zz = z > 0 ? z * 1.7 : z * 0.75; const n = fbm(x * 0.03, z * 0.03, 4);
-    const d = Math.hypot(x, zz) * (1 + n * 0.25);
-    return 30 * (1 - smooth(14, 50, d)) + fbm(x * 0.09 + 5, z * 0.09, 4) * 3.5 * (1 - smooth(30, 60, d)) - 6 * smooth(40, 70, d) + 1.2;
+  const islandH = (x, z) => { // плато, приподнятое к южному краю, обрывается утёсом к камере
+    const n = fbm(x * 0.04, z * 0.04, 4);
+    const e = Math.hypot(x / 44, z / 28) * (1 + n * 0.18);
+    const inside = z > 0 ? 1 - smooth(0.86, 1.0, e) : 1 - smooth(0.55, 1.05, e);
+    const rock = fbm(x * 0.12 + 5, z * 0.12, 4) * 2.5;
+    return inside * (12 + 0.5 * (z + 28) + rock) - 6 * (1 - inside) + 1.0;
   };
   const island = add(isle, lib.terrain({
     size: 260, seg: 150, heightFn: islandH,
@@ -27,14 +29,15 @@ export default function build({ THREE, lib, W, H, meta }) {
   }));
   island.material.roughness = 1;
   // Иоанн на краю утёса
-  const FX = 3, FZ = 12; const FY = islandH(FX, FZ);
+  const FX = 2, FZ = 22; const FY = islandH(FX, FZ);
   const john = add(isle, lib.figure({ height: 1.8, robe: '#2e2a26', hood: true, seed: 7 })); john.position.set(FX, FY - 0.05, FZ); john.rotation.y = 0.15;
   john.parts.head.rotation.x = -0.35; john.parts.hood.rotation.x = -0.7;
-  john.scale.setScalar(1.6);
+  john.scale.setScalar(2.4);
   const moonL = add(isle, new THREE.DirectionalLight('#9ab4e0', 1.2)); moonL.position.set(-200, 160, -500);
   const hemiS = add(isle, new THREE.HemisphereLight('#3a4a6a', '#080606', 0.25));
-  const moon = add(isle, lib.glow('#c8d8ff', 50, 0.5)); moon.position.set(-430, 330, -700); moon.material.fog = false;
-  const moonHalo = add(isle, lib.glow('#6a80b0', 260, 0.18)); moonHalo.position.copy(moon.position); moonHalo.material.fog = false;
+  const CAM0 = [-50, 5, 205]; const moon = add(isle, lib.glow('#dce6ff', 26, 0.55));
+  moon.position.set(FX - 5, FY + 9, FZ).sub(new THREE.Vector3(...CAM0)).normalize().multiplyScalar(820).add(new THREE.Vector3(...CAM0)); moon.material.fog = false;
+  const moonHalo = add(isle, lib.glow('#6a80b0', 260, 0.22)); moonHalo.position.copy(moon.position); moonHalo.material.fog = false;
   // буря: тёмные облака, семь светил, молнии, падающие звёзды
   const clouds = add(isle, lib.cloudLayer({ count: 34, area: [1600, 900], y: 230, scale: [380, 170], seed: 21, color: '#2a2a36', opacity: 0.9, center: [0, 620] }));
   clouds.children.forEach((c) => (c.material.fog = false));
@@ -102,14 +105,14 @@ export default function build({ THREE, lib, W, H, meta }) {
   river.frustumCulled = false;
   // город: стены, ворота, хрустальные башни
   const city = add(gard, new THREE.Group()); city.position.set(0, 0, CZ);
-  const wallMat = new THREE.MeshStandardMaterial({ color: '#8aa8c8', emissive: '#3a5a80', emissiveIntensity: 0.5, roughness: 0.1, metalness: 0.6, transparent: true, opacity: 0.8 });
+  const wallMat = new THREE.MeshStandardMaterial({ color: '#4a7a8a', emissive: '#1a3a48', emissiveIntensity: 0.5, roughness: 0.12, metalness: 0.75 });
   const goldMat = new THREE.MeshBasicMaterial({ color: '#ffe0a0' });
   const CW = 150, WHt = 30;
   [[0, CW / 2, CW, 4], [0, -CW / 2, CW, 4], [CW / 2, 0, 4, CW], [-CW / 2, 0, 4, CW]].forEach(([x, z, w, d]) => {
     const m = add(city, new THREE.Mesh(new THREE.BoxGeometry(w, WHt, d), wallMat)); m.position.set(x, WHt / 2, z);
     const band = add(city, new THREE.Mesh(new THREE.BoxGeometry(w + 1, 1.2, d + 1), goldMat)); band.position.set(x, WHt + 0.6, z);
     const band2 = add(city, new THREE.Mesh(new THREE.BoxGeometry(w + 0.6, 0.6, d + 0.6), goldMat)); band2.position.set(x, 3, z);
-    const n = 13; for (let i = 0; i <= n; i++) { const k = i / n - 0.5; const pl = add(city, new THREE.Mesh(new THREE.BoxGeometry(w > d ? 0.9 : d + 0.8, WHt + 6, w > d ? d + 0.8 : 0.9), goldMat)); pl.position.set(x + (w > d ? k * w : 0), (WHt + 6) / 2, z + (w > d ? 0 : k * d)); pl.scale.y = 1; }
+    const n = 13; for (let i = 0; i <= n; i++) { const k = i / n - 0.5; const pl = add(city, new THREE.Mesh(new THREE.BoxGeometry(w > d ? 0.9 : w + 0.8, WHt + 6, w > d ? d + 0.8 : 0.9), goldMat)); pl.position.set(x + (w > d ? k * w : 0), (WHt + 6) / 2, z + (w > d ? 0 : k * d)); pl.scale.y = 1; }
   });
   const gateTex = lib.canvasTexture(128, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#ffe8b0'); gr.addColorStop(1, '#fff8e8'); g.fillStyle = gr; g.beginPath(); g.moveTo(14, h); g.lineTo(14, h * 0.32); g.arc(w / 2, h * 0.32, w / 2 - 14, Math.PI, 0); g.lineTo(w - 14, h); g.fill(); });
   const gateMat = new THREE.MeshBasicMaterial({ map: gateTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: '#ffffff' });
@@ -119,20 +122,20 @@ export default function build({ THREE, lib, W, H, meta }) {
     const gg = add(city, lib.glow('#ffe4a8', 60, 0.5)); gg.position.set(x, 12, CW / 2 + 6); gateGlows.push(gg);
   });
   [-48, 0, 48].forEach((z) => [-1, 1].forEach((s) => { const gm = add(city, new THREE.Mesh(new THREE.PlaneGeometry(11, 22), gateMat)); gm.position.set(s * (CW / 2 + 2.2), 11, z); gm.rotation.y = s * Math.PI / 2; }));
-  const crystal = new THREE.MeshStandardMaterial({ color: '#cfe0f4', emissive: '#ffcf80', emissiveIntensity: 0.45, roughness: 0.08, metalness: 0.7, flatShading: true });
+  const crystal = new THREE.MeshStandardMaterial({ color: '#cfe0f4', emissive: '#ffcf80', emissiveIntensity: 0.7, roughness: 0.08, metalness: 0.7, flatShading: true });
   const cr = rng(17); const prism = new THREE.CylinderGeometry(1, 1, 1, 6); prism.translate(0, 0.5, 0); const tip = new THREE.ConeGeometry(1, 1, 6); tip.translate(0, 0.5, 0);
   const NT = 46; const towers = new THREE.InstancedMesh(prism, crystal, NT), tips = new THREE.InstancedMesh(tip, crystal, NT);
   const m4 = new THREE.Matrix4(), qq = new THREE.Quaternion(), e3 = new THREE.Euler();
   for (let i = 0; i < NT; i++) {
     const a = cr() * Math.PI * 2, d = i === 0 ? 0 : 12 + Math.sqrt(cr()) * 55; const x = Math.cos(a) * d, z = Math.sin(a) * d;
-    const h = i === 0 ? 170 : 40 + (1 - d / 70) * 80 * (0.5 + cr() * 0.5), r = i === 0 ? 9 : 3 + cr() * 4;
+    const h = i === 0 ? 115 : 34 + (1 - d / 70) * 70 * (0.5 + cr() * 0.5), r = i === 0 ? 6 : 2.5 + cr() * 3.5;
     qq.setFromEuler(e3.set(0, cr() * 3, 0));
     m4.compose(new THREE.Vector3(x, 0, z), qq, new THREE.Vector3(r, h, r)); towers.setMatrixAt(i, m4);
     m4.compose(new THREE.Vector3(x, h, z), qq, new THREE.Vector3(r, r * 3.5, r)); tips.setMatrixAt(i, m4);
   }
   city.add(towers, tips);
   const cityHalo = add(city, lib.glow('#ffe6b0', 700, 0.2)); cityHalo.position.set(0, 60, 0); cityHalo.material.fog = false;
-  const cityCore = add(city, lib.glow('#fff4dc', 160, 0.3)); cityCore.position.set(0, 150, 0); cityCore.material.fog = false;
+  const cityCore = add(city, lib.glow('#fff4dc', 160, 0.3)); cityCore.position.set(0, 120, 0); cityCore.material.fog = false;
   const cityL = add(city, new THREE.PointLight('#ffe0a8', 0, 0, 0)); // запасной (не используется)
   cityL.visible = false;
   // свет сада
@@ -260,16 +263,16 @@ export default function build({ THREE, lib, W, H, meta }) {
     scene, camera,
     update(t, S) {
       const P = S.post; P.vignette = 0.42; P.grain = 0.045; P.ca = 0.0015;
-      const inGarden = t >= C.tree;
+      const CUT = C.tree + 0.55; const inGarden = t >= CUT; // держим море, пока гаснет цитата
       isle.visible = !inGarden; gard.visible = inGarden;
-      let dip = 1; [C.tears, C.tree].forEach((c) => { dip = Math.min(dip, smooth(0, 0.35, Math.abs(t - c))); });
+      let dip = 1; [C.tears, CUT].forEach((c) => { dip = Math.min(dip, smooth(0, 0.35, Math.abs(t - c))); });
 
       if (!inGarden) {
         const storm = Math.min(ramp(t, C.new - 0.6, 1.2), 1 - ramp(t, C.new + 4.3, 2.4));      // буря
         const dawn = ramp(t, C.new + 4.0, 3.0);                                                 // рассвет нового мира
         const lt = t - C.new; fsU.lt.value = lt; fsU.op.value = storm;
         // небо
-        const top = nightTop.clone().lerp(col('#06060c'), storm).lerp(col('#22355a'), dawn);
+        const top = nightTop.clone().lerp(col('#06060c'), storm).lerp(col('#2a4270'), dawn);
         const hor = nightHor.clone().lerp(col('#20141c'), storm).lerp(col('#c88a64'), dawn);
         sky.u.top.value.copy(top); sky.u.horizon.value.copy(hor); sky.u.bottom.value.copy(hor).multiplyScalar(0.3);
         const sunY = lerp(-0.06, 0.035, ramp(t, C.new + 4.4, 5));
@@ -285,7 +288,7 @@ export default function build({ THREE, lib, W, H, meta }) {
         // море
         sea.position.set(Math.round(camera.position.x / 10) * 10, 0, Math.round(camera.position.z / 10) * 10);
         sea.u.skyc.value.copy(hor); sea.u.deep.value.set('#01040a').lerp(col('#0a2238'), dawn); sea.u.shallow.value.set('#04101a').lerp(col('#2a4a60'), dawn);
-        if (dawn > 0.01) { sea.u.sunDir.value.copy(sky.u.sunDir.value); sea.u.sunColor.value.set('#ffcf98').multiplyScalar(dawn * 0.6); } else { sea.u.sunDir.value.set(-0.33, 0.19, -0.7).normalize(); sea.u.sunColor.value.set('#9ab4e0').multiplyScalar(0.5 * (1 - storm)); }
+        if (dawn > 0.01) { sea.u.sunDir.value.copy(sky.u.sunDir.value); sea.u.sunColor.value.set('#ffcf98').multiplyScalar(dawn * 0.6); } else { sea.u.sunDir.value.copy(moon.position).sub(camera.position).normalize(); sea.u.sunColor.value.set('#9ab4e0').multiplyScalar(0.6 * (1 - storm)); }
         sea.u.amp.value = lerp(0.7, 1.1, storm) * (1 - dawn * 0.65); sea.u.foam.value = 0.15 + storm * 0.2;
         const fogC = hor.clone().multiplyScalar(0.5); scene.fog.color.copy(fogC); scene.fog.density = 0.0025; sea.u.fogColor.value.copy(fogC); sea.u.fogDensity.value = 0.0018;
         moonL.color.set('#9ab4e0').lerp(col('#ffd0a0'), dawn); moonL.position.set(lerp(-200, 400, dawn), lerp(160, 40, dawn), lerp(-500, 900, dawn)); moonL.intensity = 1.3 * (1 - storm * 0.6) + bolt * 2 + dawn * 0.6;
@@ -294,13 +297,16 @@ export default function build({ THREE, lib, W, H, meta }) {
         P.flash = bolt * 0.12;
         // камера
         if (t < C.new) {
-          cameraPath(camera, [[0, [-16, 9, 78], [FX - 6, FY + 6, FZ - 20]], [C.new, [-10, 13, 52], [FX - 4, FY + 8, FZ - 20]]], t);
-          handheld(camera, t, 0.004);
+          camera.fov = 24; camera.updateProjectionMatrix();
+          cameraPath(camera, [[0, CAM0, [FX + 2, FY - 6, FZ]], [C.new, [-36, 7, 165], [FX + 1, FY - 2, FZ]]], t);
+          handheld(camera, t, 0.002);
         } else if (t < C.tears) {
-          cameraPath(camera, [[C.new, [FX + 2.2, FY + 1.6, FZ - 9], [FX + 30, FY + 125, FZ + 500]], [C.new + 4.3, [FX + 2.4, FY + 1.9, FZ - 8], [FX + 30, FY + 115, FZ + 500]], [C.tears, [FX + 2.8, FY + 2.6, FZ - 7], [FX + 30, FY + 30, FZ + 500]]], t);
+          camera.fov = 38; camera.updateProjectionMatrix();
+          cameraPath(camera, [[C.new, [FX + 3.6, FY + 2.6, FZ - 17], [FX + 30, FY + 125, FZ + 500]], [C.new + 4.3, [FX + 3.8, FY + 2.9, FZ - 15.5], [FX + 30, FY + 115, FZ + 500]], [C.tears, [FX + 4.2, FY + 3.6, FZ - 14], [FX + 30, FY + 30, FZ + 500]]], t);
           handheld(camera, t, 0.01 * (1 - dawn) + 0.003);
         } else {
-          const k = (t - C.tears) / (C.tree - C.tears);
+          camera.fov = 38; camera.updateProjectionMatrix();
+          const k = (t - C.tears) / (CUT - C.tears);
           camera.position.set(lerp(-20, -8, k), lerp(4, 6, k), lerp(130, 175, k)); camera.lookAt(lerp(40, 46, k), lerp(34, 38, k), 900);
           S.quote.y = 0.42;
         }
@@ -312,7 +318,7 @@ export default function build({ THREE, lib, W, H, meta }) {
         rU.bright.value = 0.6 + fin * 0.15;
         sky.u.top.value.set('#2e4a7a').lerp(col('#3a5280'), fin); sky.u.horizon.value.set('#e8a868').lerp(col('#f0b878'), fin); sky.u.bottom.value.set('#4a3420');
         sky.u.sunDir.value.set(0.25, 0.1, -1).normalize(); sky.u.sunGlow.value = 0.45 + fin * 0.25; sky.u.starAmt.value = 0; stars.u.opacity.value = 0;
-        scene.fog.color.set('#b88a58').lerp(col('#c89a62'), fin); scene.fog.density = 0.0013 - gk * 0.0003;
+        scene.fog.color.set('#b88a58').lerp(col('#c89a62'), fin); scene.fog.density = 0.0013 - gk * 0.0004;
         massU.fogC.value.copy(scene.fog.color); massU.fogD.value = scene.fog.density; glowU.fogD.value = flowerU.fogD.value = scene.fog.density;
         glowU.bright.value = 1.0 + fin * 0.3;
         fruitGlows.forEach((g, i) => { g.material.opacity = 0.5 * (0.85 + 0.15 * Math.sin(t * 1.5 + i)); });
@@ -326,11 +332,12 @@ export default function build({ THREE, lib, W, H, meta }) {
           [S.dur, [g0 + TX + 74, 34, TZ + 190], [g0 + 0, 22, -280]],
         ], t);
         handheld(camera, t, 0.003);
-        P.exposure = 0.88 + fin * 0.04; P.bloom = 0.6 + fin * 0.15; P.bloomThreshold = 0.7; P.bloomRadius = 0.75; P.tint = [1.03, 1, 0.94]; P.sat = 1.05;
+        P.exposure = 0.88 - fin * 0.05; P.contrast = 1.08; P.bloom = 0.6 + fin * 0.15; P.bloomThreshold = 0.7; P.bloomRadius = 0.75; P.tint = [1.03, 1, 0.94]; P.sat = 1.05;
         S.quote.y = 0.46;
         sky.position.copy(camera.position); stars.position.copy(camera.position);
       }
       P.exposure *= lerp(0.15, 1, dip);
+      if (inGarden) P.exposure *= lerp(0.4, 1, ramp(t, CUT, 0.7)); // цитата про слёзы ещё гаснет поверх нового кадра
       S.fadeOut = 2.2;
     },
   };

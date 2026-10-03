@@ -201,7 +201,7 @@ export default function build({ THREE, lib, meta }) {
         });
         birds.position.set(-30 + st * 4, 26 + Math.sin(st * 0.5) * 2, -60 - st * 2); birds.children.forEach((b, i) => (b.scale.y = 0.6 + 0.4 * Math.sin(t * 8 + i)));
         if (t < 33.2) cameraPath(camera, [[C.egypt, [-60, 22, 70], [-10, 6, -120]], [33.2, [-52, 16, 52], [-14, 6, -140]]], t);
-        else { const zc = 18 - st * 1.35; cameraPath(camera, [[33.2, [-9, 0.9, zc - 4], [-34, 3.2, zc - 20]], [39.4, [-9.5, 1.0, zc - 6], [-34, 3.4, zc - 24]]], t); }
+        else { const zc = 18 - st * 1.35; cameraPath(camera, [[33.2, [-11, 2.4, zc - 2], [-34, 2.6, zc - 32]], [39.4, [-11.5, 2.6, zc - 4], [-34, 2.8, zc - 36]]], t); }
         handheld(camera, t, 0.003);
       }
     },

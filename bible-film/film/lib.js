@@ -139,7 +139,7 @@ export function motes({ count = 800, box = [40, 20, 40], center = [0, 8, 0], see
         vec4 mv = modelViewMatrix*vec4(q,1.); gl_Position = projectionMatrix*mv;
         float edge = smoothstep(.5, .35, abs(q.y/box.y));
         vA = edge * (.4+.6*sin(time*(1.+sd.x*2.)+sd.y*50.)*.5+.5);
-        gl_PointSize = size*(.4+sd.y)*pxr*(60./max(-mv.z, 1.)); }`,
+        gl_PointSize = min(size*(.4+sd.y)*pxr*(60./max(-mv.z, 1.)), 56.); }`,
     fragmentShader: `uniform vec3 color; uniform float opacity; varying float vA;
       void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5, 0., d);
         gl_FragColor = vec4(color*a*a*vA*opacity, 1.); }`,
@@ -167,7 +167,7 @@ export function fire({ count = 600, seed = 11, radius = 0.6, height = 3, size = 
         q.x += sin(time*3. + sd.y*30. + life*6.)*.15*life*height*.3;
         q.z += cos(time*2.6 + sd.x*30. + life*5.)*.15*life*height*.3;
         vec4 mv = modelViewMatrix*vec4(q,1.); gl_Position = projectionMatrix*mv;
-        gl_PointSize = size*pxr*(1.-life*.7)*(.5+sd.z)*(30./max(-mv.z,1.)); }`,
+        gl_PointSize = min(size*pxr*(1.-life*.7)*(.5+sd.z)*(30./max(-mv.z,1.)), 56.); }`,
     fragmentShader: `uniform vec3 c1, c2; uniform float intensity; varying float vL; varying float vS;
       void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5,0.,d);
         vec3 c = mix(c1*2.2, c2, smoothstep(.0,.6,vL)); float fade = smoothstep(0.,.08,vL)*(1.-smoothstep(.55,1.,vL));

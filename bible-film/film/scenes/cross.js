@@ -380,7 +380,7 @@ export default function build({ THREE, lib, W, H, meta }) {
         hemi.color.set('#5a4a40'); hemi.groundColor.set('#100a08'); hemi.intensity = 0.35; sun.intensity = 0;
         veilU.tear.value = tearK; veilU.open.value = openK; veilU.light.value = ramp(t, T5 + 1.2, 1);
         const lightK = Math.min(1, tearK * 1.4) * (0.6 + 0.4 * openK);
-        behindU.k.value = 0.55 + 0.4 * lightK;
+        behindU.k.value = 0.5 + 0.3 * lightK;
         veilBeams.forEach((b, i) => (b.u.opacity.value = lightK * (i ? 0.07 : 0.11)));
         gapGlow.material.opacity = lightK * 0.12; gapGlow.position.y = VH * (1 - tearK * 0.5); gapGlow.scale.setScalar(10 + lightK * 14);
         templeL.intensity = lightK * 90;
