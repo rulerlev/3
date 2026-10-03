@@ -360,7 +360,7 @@ export default function build({ THREE, lib, meta }) {
           setSky('#05091a', '#1a2440', '#05060a', [-0.3, 0.7, -0.6], '#d8e4ff', 0.02, 0.4, 1.3);
           scene.fog.color.set('#0a1020'); scene.fog.density = 0.012;
           hemi.color.set('#4a5a8a'); hemi.groundColor.set('#0a0a0c'); hemi.intensity = 0.3 + ang * 0.1; sun.intensity = 0; moonL.intensity = 0.35;
-          angelU.op.value = ang * 0.2; angelPool.material.opacity = ang * 0.3; angelL.intensity = ang * 14; angelMotes.u.opacity.value = ang * 0.8;
+          angelU.op.value = ang * 0.2; angelPool.material.opacity = ang * 0.3; angelL.intensity = ang * 14; angelL.visible = ang > 0.001; angelMotes.u.opacity.value = ang * 0.8;
           daniel.parts.arms[0].rotation.set(lerp(-0.75, -1.9, ang), 0, lerp(0.5, -0.3, ang)); daniel.parts.arms[1].rotation.set(lerp(-0.75, -1.9, ang), 0, lerp(-0.5, 0.3, ang));
           const lie = ramp(t, T_LIE, 1.8);
           lions.forEach((L, i) => {
@@ -398,6 +398,7 @@ export default function build({ THREE, lib, meta }) {
           handheld(camera, t, 0.003);
         }
       }
+      sun.visible = sun.intensity > 0.001;
       sky.position.copy(camera.position);
     },
   };

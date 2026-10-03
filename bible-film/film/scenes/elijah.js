@@ -238,8 +238,8 @@ export default function build({ THREE, lib, meta }) {
   trail.frustumCulled = false; gW.add(trail);
   // вихрь: спираль облачных спрайтов, подсвеченных огнём колесницы
   const vtex = [lib.cloudTexture(31), lib.cloudTexture(32), lib.cloudTexture(33)];
-  const vort = []; { const r = rng(53); for (let i = 0; i < 30; i++) { const m = new THREE.SpriteMaterial({ map: vtex[i % 3], color: '#5a4a50', transparent: true, opacity: 0, depthWrite: false, fog: false });
-    const sp = new THREE.Sprite(m); const h = (i + r() * 0.8) / 30; const sz = lerp(14, 46, h) * (0.8 + r() * 0.4); sp.scale.set(sz, sz * 0.7, 1); gW.add(sp); vort.push({ sp, h, a0: r() * 6.283, rr: 0.8 + r() * 0.4, o: 0.35 + r() * 0.35 }); } }
+  const vort = []; { const r = rng(53); for (let i = 0; i < 24; i++) { const m = new THREE.SpriteMaterial({ map: vtex[i % 3], color: '#5a4a50', transparent: true, opacity: 0, depthWrite: false, fog: false });
+    const sp = new THREE.Sprite(m); const h = (i + r() * 0.8) / 24; const sz = lerp(14, 46, h) * (0.8 + r() * 0.4); sp.scale.set(sz, sz * 0.7, 1); gW.add(sp); vort.push({ sp, h, a0: r() * 6.283, rr: 0.8 + r() * 0.4, o: 0.35 + r() * 0.35 }); } }
   const dustW = lib.motes({ count: 600, box: [70, 60, 70], center: [WC.x, WC.y + 30, WC.z], size: 4, color: '#ffb070', speed: 0.5, kind: 'rise', opacity: 0.0, seed: 52 }); gW.add(dustW);
   // плащ
   const cloakG = new THREE.PlaneGeometry(1.3, 1.5, 8, 8); const cloakBase = cloakG.attributes.position.array.slice();

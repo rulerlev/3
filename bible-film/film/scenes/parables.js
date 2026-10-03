@@ -284,6 +284,7 @@ export default function build({ THREE, lib, meta }) {
         else cameraPath(camera, [[T_RISE, [-1.6, hP(-1.6, 10.5) + 1.4, 10.5], [3, 1.5, -6]], [C.run, [-1.2, hP(-1.2, 9.5) + 1.6, 9.5], [3.5, 2.0, -8]]], t);
         handheld(camera, t, 0.004);
       }
+      sun.visible = sun.intensity > 0.001;
       sky.position.copy(camera.position);
     },
   };

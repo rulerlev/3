@@ -386,6 +386,7 @@ export default function build({ THREE, lib, meta }) {
         cameraPath(camera, [[C.song, [0.4, hG(0, 14) + 1.4, 14], [TREE[0], hG(...TREE) + 3, TREE[1]]], [S.dur, [1.2, hG(1, -12) + 1.4, -12], [TREE[0], hG(...TREE) + 4.2, TREE[1]]]], t);
         handheld(camera, t, 0.003);
       }
+      sun.visible = sun.intensity > 0.001;
       sky.position.copy(camera.position);
     },
   };
