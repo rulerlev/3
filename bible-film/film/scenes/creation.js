@@ -59,7 +59,7 @@ export default function build({ THREE, lib, W, H, meta }) {
       sunLight.intensity = light * 2.5 * (1 - nightK * 0.8); amb.intensity = 0.15 + dawn * 0.5;
 
       // вспышка «да будет свет»
-      S.post.flash = ramp(t, L + 2.0, 0.25) * (1 - ramp(t, L + 2.3, 2.2)) * 0.85;
+      S.post.flash = ramp(t, L + 2.0, 0.2) * (1 - ramp(t, L + 2.2, 0.9)) * 0.55;
       S.post.exposure = lerp(0.8, 1.0, dawn) - evening * 0.12; S.post.bloom = 0.45 + light * 0.35; S.post.bloomThreshold = 0.85;
       S.quote.y = t > M ? 0.36 : 0.42;
 
