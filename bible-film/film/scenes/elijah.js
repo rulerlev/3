@@ -140,8 +140,8 @@ export default function build({ THREE, lib, meta }) {
           gl_FragColor = vec4(c*edge*(.45 + .9*n)*top*bot*opacity, 1.); }` });
     const mesh = new THREE.Mesh(geo, m); mesh.frustumCulled = false; return Object.assign(mesh, { u });
   }
-  const column = fireColumn(6.5, 2.6, 120, '#ffb040', '#ff3a00'); column.position.set(AE.x, AE.y + 120, AE.z); gC.add(column);
-  const core = fireColumn(2.2, 1.1, 120, '#fff0c8', '#ffa040');
+  const column = fireColumn(6.5, 2.6, 120, '#ff9a30', '#e02a00'); column.position.set(AE.x, AE.y + 120, AE.z); gC.add(column);
+  const core = fireColumn(2.2, 1.1, 120, '#ffd890', '#ff8020');
   const heaven = lib.glow('#ffd8a0', 70, 0); heaven.position.set(AE.x, 34, AE.z - 6); gC.add(heaven); core.position.copy(column.position); gC.add(core);
   const shockU = { r: { value: 0 }, op: { value: 0 } };
   const shock = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ uniforms: shockU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
@@ -159,9 +159,9 @@ export default function build({ THREE, lib, meta }) {
           float n = fbm2(vec2(x*2.2 + seed, y*2.6 - time*2.4)); float n2 = vnoise(vec2(x*4. - seed, y*5. - time*3.6));
           float width = mix(.8, .04, pow(y, .75)) + (n - .5)*.45;
           float body = smoothstep(width, width*.25, abs(x + (n2 - .5)*.45*y));
-          float f = body * smoothstep(1., .25, y + (n - .5)*.6) * smoothstep(0., .06, y);
+          float f = body * smoothstep(.92, .3, y + (n - .5)*.35) * smoothstep(0., .06, y);
           f = clamp(f*1.5, 0., 1.);
-          vec3 c = vec3(1.4,1.1,.65)*smoothstep(.65, 1., f) + vec3(1.,.4,.07)*smoothstep(.2, .65, f) + vec3(.45,.07,.02)*smoothstep(0., .3, f);
+          vec3 c = vec3(.9,.65,.3)*smoothstep(.7, 1., f) + vec3(1.,.32,.04)*smoothstep(.2, .65, f) + vec3(.4,.05,.01)*smoothstep(0., .3, f);
           gl_FragColor = vec4(c*f*k, 1.); }` });
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), m); mesh.frustumCulled = false; return Object.assign(mesh, { u });
   }
@@ -182,7 +182,7 @@ export default function build({ THREE, lib, meta }) {
         vA = step(0., T) * (1. - vL); vec4 mv = modelViewMatrix*vec4(p,1.); gl_Position = projectionMatrix*mv; gl_PointSize = pxr*(3. + 5.*sd.y)*(30./max(-mv.z,1.))*(1.-vL*.6); }`,
     fragmentShader: `varying float vA; varying float vL; void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5,0.,d); vec3 c = mix(vec3(1.,.85,.5), vec3(1.,.35,.08), vL); gl_FragColor = vec4(c*a*vA*1.3, 1.); }` }));
   burst.frustumCulled = false; gC.add(burst);
-  const steam = lib.motes({ count: 700, box: [6, 10, 6], center: [AE.x, AE.y + 4.5, AE.z], size: 22, color: '#e8d8d0', speed: 0.5, kind: 'rise', opacity: 0, seed: 23 }); gC.add(steam);
+  const steam = lib.motes({ count: 500, box: [5.5, 7, 5.5], center: [AE.x, AE.y + 3.2, AE.z], size: 9, color: '#a89890', speed: 0.5, kind: 'rise', opacity: 0, seed: 23 }); gC.add(steam);
   const embersE = lib.motes({ count: 260, box: [10, 18, 10], center: [AE.x, AE.y + 8, AE.z], size: 3.5, color: '#ff9a40', speed: 0.6, kind: 'embers', opacity: 0, seed: 24 }); gC.add(embersE);
   const dustC = lib.motes({ count: 500, box: [60, 12, 40], center: [0, 4, 0], size: 3, color: '#ffd8b0', speed: 0.12, opacity: 0.35, seed: 25 }); gC.add(dustC);
 
@@ -251,7 +251,7 @@ export default function build({ THREE, lib, meta }) {
   // ---------- образы ----------
   const L0 = { top: '#2c4a78', hor: '#e8a066', bot: '#3a2a20', fog: '#b88466', fogD: 0.0011, sunY: 0.1, glow: 0.55, sun: 2.6, hemi: 0.75, exp: 0.86, stars: 0, cl: '#ffd8b8' };
   const L1 = { ...L0, hor: '#e88448', fog: '#a86a4c', sunY: 0.05, glow: 0.7, sun: 2.2, exp: 0.88, cl: '#ffb890' };
-  const L2 = { top: '#141a34', hor: '#8a3e2e', bot: '#2a1810', fog: '#5a3432', fogD: 0.0014, sunY: 0.008, glow: 0.45, sun: 1.7, hemi: 0.95, exp: 0.9, stars: 0, cl: '#e88a70' };
+  const L2 = { top: '#141a34', hor: '#8a3e2e', bot: '#2a1810', fog: '#5a3432', fogD: 0.0014, sunY: -0.018, glow: 0.45, sun: 1.7, hemi: 0.95, exp: 0.9, stars: 0, cl: '#e88a70' };
   const L3 = { top: '#0a0e24', hor: '#5a2a2c', bot: '#0e0806', fog: '#2e1e22', fogD: 0.0016, sunY: -0.05, glow: 0.3, sun: 0.2, hemi: 0.3, exp: 0.95, stars: 0.4, cl: '#8a5a5a' };
   const L4 = { top: '#0a0e24', hor: '#4a2a3a', bot: '#0a0606', fog: '#2a1c24', fogD: 0.0018, sunY: -0.08, glow: 0.2, sun: 0.1, hemi: 0.25, exp: 0.95, stars: 0.8, cl: '#6a4a5a' };
   const looks = [[0, L0], [C.altars - 0.01, L0], [C.altars, L1], [15.9, L2], [C.fire, L2], [TF, L3], [C.chariot - 0.01, L3], [C.chariot, L4], [meta.dur, L4]];
@@ -266,7 +266,7 @@ export default function build({ THREE, lib, meta }) {
       sky.u.top.value.copy(Lk.top); sky.u.horizon.value.copy(Lk.hor); sky.u.bottom.value.copy(Lk.bot); sky.u.sunDir.value.copy(SUN); sky.u.sunGlow.value = Lk.glow; sky.u.starAmt.value = Lk.stars * 0.5;
       stars.u.opacity.value = Lk.stars;
       scene.fog.color.copy(Lk.fog); scene.fog.density = Lk.fogD;
-      sea.u.skyc.value.copy(Lk.hor).multiplyScalar(0.6); sea.u.sunDir.value.copy(SUN); sea.u.sunColor.value.set('#ffb070').multiplyScalar(Lk.glow * 0.8); sea.u.fogColor.value.copy(Lk.fog); sea.u.fogDensity.value = Lk.fogD * 0.6;
+      sea.u.skyc.value.copy(Lk.hor).multiplyScalar(t > 15.9 ? 0.4 : 0.6); sea.u.sunDir.value.copy(SUN); sea.u.sunColor.value.set('#ffb070').multiplyScalar(Lk.glow * 0.8); sea.u.fogColor.value.copy(Lk.fog); sea.u.fogDensity.value = Lk.fogD * 0.6;
       sun.intensity = Lk.sun; hemi.intensity = Lk.hemi; clouds.setColor(Lk.cl); clouds.drift(t, 1.5, 0);
       sun.position.set(SUN.x * 150, Math.max(SUN.y, 0.05) * 150, SUN.z * 150); sun.target.position.set(0, 0, 0);
       S.post.exposure = Lk.exp; S.post.bloom = 0.6; S.post.bloomThreshold = 0.8; S.post.tint = [1.03, 0.98, 0.92]; S.post.vignette = 0.42;
@@ -315,9 +315,9 @@ export default function build({ THREE, lib, meta }) {
         const lvl = ramp(t, 16.5, 1.8) * (1 - ramp(t, TF + 0.3, 7.0));
         waterU.level.value = lvl; waterU.sky.value.copy(Lk.hor); waterU.sunDir.value.copy(SUN);
         // --- огонь с неба
-        const desc = clamp((t - C.fire - 0.05) / (TF - C.fire - 0.05)), colK = (desc > 0 ? 1 : 0) * (1 - ramp(t, TF + 0.6, 1.8));
+        const desc = clamp((t - C.fire - 0.05) / (TF - C.fire - 0.05)), colK = (desc > 0 ? 1 : 0) * (1 - ramp(t, TF + 0.4, 1.3));
         column.scale.y = core.scale.y = Math.max(0.001, 1 - Math.pow(1 - desc, 2.2)); column.visible = core.visible = colK > 0.001;
-        column.u.opacity.value = 2.6 * colK; core.u.opacity.value = 2.2 * colK;
+        column.u.opacity.value = 1.3 * colK; core.u.opacity.value = 1.1 * colK;
         heaven.material.opacity = ramp(t, C.fire - 0.4, 0.8) * (1 - ramp(t, TF + 0.4, 2.5)) * 0.7; column.scale.x = column.scale.z = 1 + 0.5 * ramp(t, TF, 0.3) * (1 - ramp(t, TF + 0.6, 1));
         const imp = ramp(t, TF - 0.05, 0.1) * (1 - ramp(t, TF + 0.15, 1.6));
         impactGlow.material.opacity = imp * 0.35; impactGlow.scale.setScalar(20 + 25 * ramp(t, TF, 0.6));
@@ -325,7 +325,7 @@ export default function build({ THREE, lib, meta }) {
         const sw = clamp((t - TF) / 1.6); shockU.r.value = sw; shock.scale.setScalar(2 + easeOut(sw) * 70); shockU.op.value = (t > TF ? 1 : 0) * (1 - sw) * 1.4; shock.visible = t > TF && sw < 1;
         const burn = ramp(t, TF - 0.05, 0.25); const settle = lerp(1.3, 0.75, ramp(t, TF + 1.0, 3)) * (1 - 0.35 * ramp(t, 27.5, 3));
         flameE.u.intensity.value = burn * settle * 0.45; flameCore.u.intensity.value = burn * settle * 0.3;
-        flames.forEach((f, i) => { f.u.k.value = burn * settle * (i ? 0.8 : 1); const big = lerp(1.35, 1, ramp(t, TF + 0.3, 2.5)) * lerp(1, 0.7, ramp(t, 26, 4)); f.u.w.value = [5.2, 3.8, 2.6][i] * big; f.u.h.value = [9, 7, 5][i] * big; f.position.y = flameE.position.y - 0.3; f.visible = burn > 0.001; }); flameE.visible = flameCore.visible = burn > 0.001;
+        flames.forEach((f, i) => { f.u.k.value = burn * settle * (i ? 0.55 : 0.7); const big = lerp(1.35, 1, ramp(t, TF + 0.3, 2.5)) * lerp(1, 0.7, ramp(t, 26, 4)); f.u.w.value = [5.2, 3.8, 2.6][i] * big; f.u.h.value = [9, 7, 5][i] * big; f.position.y = flameE.position.y - 0.3; f.visible = burn > 0.001; }); flameE.visible = flameCore.visible = burn > 0.001;
         flameE.u.height.value = lerp(9, 5.5, ramp(t, TF + 0.4, 2.5));
         altarGlow.material.opacity = burn * 0.25 * (0.9 + 0.1 * Math.sin(t * 9));
         fireL.intensity = burn * settle * 260 * (0.9 + 0.1 * Math.sin(t * 13)) + imp * 300;
@@ -333,7 +333,7 @@ export default function build({ THREE, lib, meta }) {
         altE.wood.scale.setScalar(Math.max(0.001, 1 - ramp(t, 23.6, 2.4))); altE.wood.visible = t < 26.1;
         altE.stones.scale.y = lerp(1, 0.3, ramp(t, 25.6, 3.2)); altE.stones.scale.x = altE.stones.scale.z = lerp(1, 0.8, ramp(t, 25.6, 3.2));
         flameE.position.y = flameCore.position.y = AE.y + lerp(1.6, 0.6, ramp(t, 25.6, 3.2));
-        steam.u.opacity.value = 0.35 * ramp(t, TF + 0.3, 0.8) * (1 - ramp(t, 28.0, 2.2)); steam.visible = steam.u.opacity.value > 0.001;
+        steam.u.opacity.value = 0.22 * ramp(t, TF + 0.3, 0.8) * (1 - ramp(t, 28.0, 2.2)); steam.visible = steam.u.opacity.value > 0.001;
         embersE.u.opacity.value = 0.9 * burn; embersE.visible = burn > 0;
         waterU.glow.value = burn * lvl;
         burst.visible = t > TF - 0.3 && t < TF + 6;
@@ -341,7 +341,7 @@ export default function build({ THREE, lib, meta }) {
         if (t < 3.9) {
           // общий план: с моря на гору
           S.quote.y = 0.5;
-          cameraPath(camera, [[0, [46, 30, 92], [-6, 9, -40]], [3.9, [36, 23, 76], [-6, 8, -40]]], t);
+          cameraPath(camera, [[0, [46, 30, 92], [16, 9, -40]], [3.9, [38, 23, 76], [14, 8, -40]]], t);
         } else if (t < C.altars) {
           // жрецы (слева) против одного (справа), за ними закат над морем
           cameraPath(camera, [[3.9, [1.2, 1.5, 12.5], [-1.5, 3.2, -40]], [C.altars, [0.8, 1.6, 10.0], [-1.0, 3.2, -40]]], t);
@@ -350,12 +350,12 @@ export default function build({ THREE, lib, meta }) {
           cameraPath(camera, [[C.altars, [AB.x + 15, 3.2, AB.z + 15], [AB.x - 1, 1.6, AB.z - 6]], [15.9, [AB.x + 12, 2.8, AB.z + 16], [AB.x - 2, 1.8, AB.z - 6]]], t);
         } else if (t < C.fire) {
           // Илия заливает жертвенник водой — вода блестит во рву
-          cameraPath(camera, [[15.9, [AE.x - 5.2, 2.7, AE.z - 4.2], [AE.x - 0.4, 1.2, AE.z + 0.6]], [C.fire, [AE.x - 4.4, 2.5, AE.z - 3.6], [AE.x - 0.4, 1.25, AE.z + 0.6]]], t);
+          cameraPath(camera, [[15.9, [AE.x - 7.6, 3.3, AE.z - 6.4], [AE.x - 0.8, 1.4, AE.z + 0.3]], [C.fire, [AE.x - 6.6, 3.0, AE.z - 5.6], [AE.x - 0.8, 1.45, AE.z + 0.3]]], t);
         } else {
           // огонь с неба: общий план из-за толпы, потом медленный отъезд
           S.quote.y = 0.3;
           const shake = Math.max(0, 1 - (t - TF) / 1.2) * (t > TF ? 1 : 0);
-          S.post.bloom = 0.45; S.post.bloomThreshold = 0.9;
+          S.post.bloom = 0.45; S.post.bloomThreshold = 0.9; S.post.exposure = Lk.exp * 0.9;
           cameraPath(camera, [[C.fire, [AE.x - 3.0, 2.4, 40], [AE.x - 1.0, 12.0, AE.z]], [TF, [AE.x - 3.0, 2.4, 39.5], [AE.x - 1.0, 12.0, AE.z]], [TF + 2, [AE.x - 2.6, 2.3, 32], [AE.x - 0.8, 10.5, AE.z]], [C.chariot, [AE.x - 3.4, 2.8, 37], [AE.x - 1.0, 10.5, AE.z]]], t);
           camera.position.x += Math.sin(t * 47) * 0.12 * shake; camera.position.y += Math.sin(t * 61) * 0.1 * shake;
         }

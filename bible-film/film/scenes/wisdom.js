@@ -199,7 +199,7 @@ export default function build({ THREE, lib, meta }) {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, len, 4), new THREE.MeshBasicMaterial({ color: '#ffe0a0', transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })); m.position.set(x, bot.y + len / 2, 0); harp.add(m); strings.push(m); }
   const harpGlow = lib.glow('#ffc870', 6, 0.4); harpGlow.position.set(0, HY + 1.6, 0); gD.add(harpGlow);
   const ringM = []; for (let i = 0; i < 6; i++) { const u = { op: { value: 0 } };
-    const m = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.0, 128, 1), new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.95, 1.0, 128, 1), new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
       vertexShader: `varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
       fragmentShader: `uniform float op; void main(){ gl_FragColor = vec4(vec3(1.,.72,.32)*op, 1.); }` }));
     m.rotation.x = -Math.PI / 2; m.userData.u = u; gD.add(m); ringM.push(m); }
@@ -278,15 +278,6 @@ export default function build({ THREE, lib, meta }) {
   const lilyD = []; { const r = rng(121); let n = 0; while (n < NL) { const x = (r() - .5) * 46, z = 14 - r() * 52; if (Math.abs(x - 0.3 - z * 0.05) < 1.2) continue; const s = 0.7 + r() * 0.6; lilyD.push([x, z, s, r() * 6, r() * 0.3]);
     lilies.setColorAt(n, col(r() < 0.25 ? '#f0b8c0' : '#f8f0e4').multiplyScalar(0.8 + r() * 0.3)); n++; } }
   gG.add(lilies, stems);
-  // арка из лоз на переднем плане
-  { const vm = new THREE.MeshStandardMaterial({ color: '#2a3a18', roughness: 1 }); const lm = new THREE.MeshStandardMaterial({ color: '#3a6a24', roughness: 0.8, side: THREE.DoubleSide });
-    const r = rng(131); const leafG = new THREE.CircleGeometry(0.18, 5); const NLV = 700; const lv = new THREE.InstancedMesh(leafG, lm, NLV); let n = 0;
-    for (let k = 0; k < 4; k++) { const x0 = k < 2 ? -3.6 : 3.6; const pts = []; for (let i = 0; i <= 12; i++) { const a = i / 12; pts.push(new THREE.Vector3(x0 + Math.sin(a * 9 + k) * 0.25 + (k % 2) * 0.2, hG(x0, 6) + Math.sin(a * Math.PI) * 0 + a * 5.2, 6 + (k % 2) * 0.3)); }
-      const top = []; if (k === 0) for (let i = 0; i <= 16; i++) { const a = i / 16; top.push(new THREE.Vector3(lerp(-3.6, 3.6, a), hG(0, 6) + 5.2 + Math.sin(a * Math.PI) * 1.6 + Math.sin(a * 20) * 0.12, 6 + Math.sin(a * 7) * 0.2)); }
-      [pts, top].forEach((pp) => { if (pp.length < 2) return; const cv = new THREE.CatmullRomCurve3(pp); gG.add(new THREE.Mesh(new THREE.TubeGeometry(cv, 40, 0.05, 5), vm));
-        for (let i = 0; i < 100 && n < NLV; i++) { const p = cv.getPoint(r()); lv.setMatrixAt(n, tmpM.compose(tmpP.set(p.x + (r() - .5) * 0.5, p.y + (r() - .5) * 0.4, p.z + (r() - .5) * 0.4), tmpQ.setFromEuler(eul.set(r() * 6, r() * 6, r() * 6)), tmpS.setScalar(0.7 + r() * 0.8))); lv.setColorAt(n, col('#3a6a24').multiplyScalar(0.6 + r() * 0.7)); n++; } }); }
-    lv.count = n; gG.add(lv);
-    const bl = lib.motes({ count: 1, box: [1, 1, 1] }); void bl; }
   const petals = lib.motes({ count: 700, box: [40, 10, 50], center: [0, 3, -12], size: 2.2, color: '#ffd0c8', speed: 0.3, kind: 'dust', opacity: 0.7, seed: 141 }); gG.add(petals);
   const mistG = lib.cloudLayer({ count: 10, area: [300, 120], y: 2, scale: [120, 14], seed: 151, color: '#ffd8c0', opacity: 0.3, center: [0, -90] }); gG.add(mistG);
 
@@ -321,15 +312,15 @@ export default function build({ THREE, lib, meta }) {
         ash.u.speed.value = 5 + st * 8; ash.u.opacity.value = 0.45 + st * 0.3;
         // Иов: медленно поднимает голову к буре
         const look = ramp(t, C.storm + 0.3, 1.5); job.parts.head.position.z = lerp(0.12, -0.02, look); job.parts.body.rotation.x = lerp(0.18, 0.05, look);
-        const desc = ramp(t, C.storm - 0.6, 2.4);
-        vortex.visible = t > C.storm - 1; vortexU.op.value = desc * 0.95; vortex.scale.set(1, lerp(0.15, 1, desc), 1); vortex.position.y = lerp(110, 0, desc);
+        const desc = ramp(t, C.storm - 1.2, 2.2);
+        vortex.visible = t > C.storm - 1; vortexU.op.value = desc * 0.95; vortex.scale.set(1, lerp(0.15, 1, desc), 1); vortex.position.y = lerp(70, 0, desc);
         const lf = Math.max(0, Math.sin(t * 13.7) * Math.sin(t * 5.3) - 0.55) * 2.2 * desc; vortexU.flash.value = lf; vortexGlow.material.opacity = lf * 0.35;
         P.sat = 0.65; P.exposure = 0.95; P.contrast = 1.12; P.tint = [1.02, 0.99, 0.96];
         if (t < C.storm) {
           cameraPath(camera, [[C.job, [-6.0, 1.1, 8.4], [1.2, 1.5, -3]], [C.storm, [-3.4, 0.8, 4.4], [0.4, 1.3, -2]]], t);
           handheld(camera, t, 0.004);
         } else {
-          cameraPath(camera, [[C.storm, [-3.5, 0.9, 7], [0, 6, -30]], [T_COSMOS, [-2.0, 0.7, 6], [0, 32, -45]]], t);
+          cameraPath(camera, [[C.storm, [-3.5, 0.9, 7], [0, 13, -30]], [T_COSMOS, [-2.0, 0.7, 6], [0, 34, -45]]], t);
           handheld(camera, t * 2, 0.01 + desc * 0.01);
         }
         P.flash = Math.max(0, lf - 0.6) * 0.12 + ramp(t, T_COSMOS - 0.35, 0.35) * 0.5;
@@ -354,7 +345,7 @@ export default function build({ THREE, lib, meta }) {
         hemi.color.set('#4a5a8a'); hemi.groundColor.set('#05060a'); hemi.intensity = 0.7; sun.color.set('#a8b8ff'); sun.intensity = 0.6; sun.position.set(-150, 120, -200); sun.target.position.set(0, 0, 0);
         const k = t - C.psalms; const beat = (x) => Math.pow(Math.max(0, Math.cos(x * Math.PI * 2 / 1.6)), 6);
         strings.forEach((s, i) => { s.material.color.set('#ffd890').multiplyScalar(0.4 + 0.9 * beat(k - i * 0.05)); s.position.z = Math.sin(t * 40 + i) * 0.006 * beat(k - i * 0.05); });
-        ringM.forEach((m, i) => { const ph = (k / 1.6 - i * (1 / 1.0) / 1 + 10) % 6; const age = (k + 10 - i * 1.6) % (6 * 1.6) / 1.6; const R = 1 + age * 9; m.scale.set(R, R, R); m.position.set(0, HY + 0.15 + age * 0.15, 0); m.userData.u.op.value = k > i * 1.6 - 0.01 ? Math.exp(-age * 0.5) * 0.75 * smooth(0, 0.2, age) : 0; void ph; });
+        ringM.forEach((m, i) => { const ph = (k / 1.6 - i * (1 / 1.0) / 1 + 10) % 6; const age = (k + 10 - i * 1.6) % (6 * 1.6) / 1.6; const R = 1 + age * 9; m.scale.set(R, R, R); m.position.set(0, HY + 0.15 + age * 0.15, 0); m.userData.u.op.value = k > i * 1.6 - 0.01 ? Math.exp(-age * 0.5) * 0.45 * smooth(0, 0.2, age) : 0; void ph; });
         harpGlow.material.opacity = 0.25 + 0.35 * beat(k);
         P.bloom = 0.85; P.bloomThreshold = 0.55; P.exposure = 1.05;
         cameraPath(camera, [[C.psalms, [6.5, HY + 2.4, 8.5], [0, HY + 1.6, 0]], [C.eccl, [-4.5, HY + 1.6, 9.5], [0, HY + 2.2, 0]]], t);
@@ -385,14 +376,14 @@ export default function build({ THREE, lib, meta }) {
         const k = ramp(t, C.song, 5);
         setSky('#3a4a86', cA.set('#f09078').lerp(col('#ffb888'), k).getStyle(), '#4a3a30', [0.22, 0.015 + k * 0.03, -1], '#ffe0b8', 0.028, 0.6);
         scene.fog.color.set('#d89a88'); scene.fog.density = 0.0045;
-        hemi.color.set('#d0c0e0'); hemi.groundColor.set('#3a4a24'); hemi.intensity = 0.75; sun.color.set('#ffc8a0'); sun.intensity = 1.8; sun.position.set(20, 30, -300); sun.target.position.set(0, 0, 0);
+        hemi.color.set('#d0c0e0'); hemi.groundColor.set('#3a4a24'); hemi.intensity = 1.0; sun.color.set('#ffc8a0'); sun.intensity = 1.8; sun.position.set(20, 30, -300); sun.target.position.set(0, 0, 0);
         mistG.drift(t, 1.5, 0);
         for (let i = 0; i < NL; i++) { const [x, z, s, ph, tl] = lilyD[i]; const y = hG(x, z); const sw = Math.sin(t * 1.3 + ph) * 0.06;
           tmpQ.setFromEuler(eul.set(tl + sw, ph, sw)); tmpP.set(x, y, z); tmpS.setScalar(s);
           lilies.setMatrixAt(i, tmpM.compose(tmpP, tmpQ, tmpS)); stems.setMatrixAt(i, tmpM); }
         lilies.instanceMatrix.needsUpdate = true; stems.instanceMatrix.needsUpdate = true;
         P.bloom = 0.6; P.bloomThreshold = 0.8; P.exposure = 0.95; P.sat = 1.1; P.tint = [1.03, 0.99, 0.97];
-        cameraPath(camera, [[C.song, [0.4, hG(0, 14) + 1.4, 14], [TREE[0], hG(...TREE) + 3, TREE[1]]], [S.dur, [1.2, hG(1, -8) + 1.5, -8], [TREE[0], hG(...TREE) + 3.4, TREE[1]]]], t);
+        cameraPath(camera, [[C.song, [0.4, hG(0, 14) + 1.4, 14], [TREE[0], hG(...TREE) + 3, TREE[1]]], [S.dur, [1.2, hG(1, -12) + 1.4, -12], [TREE[0], hG(...TREE) + 4.2, TREE[1]]]], t);
         handheld(camera, t, 0.003);
       }
       sky.position.copy(camera.position);

@@ -76,7 +76,7 @@ export default function build({ THREE, lib, meta }) {
   box(11.5, 14, 1, wallMat, -8.25, 7, -25, gI); box(11.5, 14, 1, wallMat, 8.25, 7, -25, gI); box(5, 6.5, 1, wallMat, 0, 10.75, -25, gI);
   const doorSky = new THREE.Mesh(new THREE.PlaneGeometry(14, 12), new THREE.ShaderMaterial({ fog: false, uniforms: { k: { value: 1 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-    fragmentShader: 'uniform float k; varying vec2 vUv; void main(){ vec3 a = vec3(1.0,.55,.26), b = vec3(.32,.14,.16); float y = vUv.y; vec3 c = mix(a, b, smoothstep(.12,.75,y)); c *= .55 + .45*smoothstep(.0,.12,y); c += vec3(1.,.78,.45)*exp(-pow(length((vUv-vec2(.46,.17))*vec2(1.,1.4))*7.,2.))*1.1; c += vec3(.9,.5,.3)*smoothstep(.02,0.,abs(y-.14+.01*sin(vUv.x*40.)))*.25; gl_FragColor = vec4(c*k*.62,1.); }' }));
+    fragmentShader: 'uniform float k; varying vec2 vUv; void main(){ vec3 a = vec3(1.0,.52,.22), b = vec3(.42,.16,.1); float y = vUv.y; vec3 c = mix(a, b, smoothstep(.12,.75,y)); c *= .55 + .45*smoothstep(.0,.12,y); c += vec3(1.,.78,.45)*exp(-pow(length((vUv-vec2(.46,.17))*vec2(1.,1.4))*7.,2.))*1.1; c += vec3(.9,.5,.3)*smoothstep(.02,0.,abs(y-.14+.01*sin(vUv.x*40.)))*.25; gl_FragColor = vec4(c*k*.62,1.); }' }));
   doorSky.position.set(0, 4, -27); gI.add(doorSky);
   const doorGlow = lib.glow('#ffb070', 12, 0.28); doorGlow.position.set(0, 3.2, -24); gI.add(doorGlow);
   // помост

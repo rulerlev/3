@@ -136,7 +136,7 @@ export default function build({ THREE, lib, meta }) {
     const mudPatch = mesh(sphG, pigDark, inner, -0.2, 0.36, 0); mudPatch.scale.set(0.45, 0.2, 0.41);
     g.userData = { x: (r() - .5) * 13, z: 5 - r() * 11, a: r() * 6.28, sp: 0.2 + r() * 0.3, ph: r() * 6, legs, head };
     g.scale.setScalar(0.9 + r() * 0.3); gP.add(g); pigs.push(g); }
-  const sonPig = lib.figure({ height: 1.72, robe: '#5a4838', skin: '#8a5a3c', hood: false, seed: 121, belt: '#2a1a10' }); gP.add(sonPig);
+  const sonPig = lib.figure({ height: 1.72, robe: '#5a4838', skin: '#8a5a3c', hood: true, hoodColor: '#3a2e24', seed: 121, belt: '#2a1a10' }); gP.add(sonPig);
   const logP = mesh(new THREE.CylinderGeometry(0.22, 0.25, 2.4, 8), woodM, gP, 0, 0, 0); logP.rotation.z = Math.PI / 2;
   { const r = rng(131); const NP = 30; const posts = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.08, 1.3, 5).translate(0, 0.65, 0), woodM, NP); const rails = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.08, 0.06), woodM, NP);
     for (let i = 0; i < NP; i++) { const a = i / NP * Math.PI * 2; const x = Math.cos(a) * 14, z = Math.sin(a) * 13; posts.setMatrixAt(i, tmpM.compose(tmpP.set(x, hP(x, z) - 0.1, z), tmpQ.setFromEuler(eul.set((r() - .5) * 0.2, 0, (r() - .5) * 0.2)), tmpS.setScalar(1)));
@@ -276,11 +276,11 @@ export default function build({ THREE, lib, meta }) {
         const LX = 0.6, LZ = 6.0; logP.position.set(LX, hP(LX, LZ) + 0.2, LZ);
         const up = ramp(t, T_RISE, 1.2); const wk = Math.max(0, t - T_RISE - 1.2);
         sonPig.rotation.y = lerp(-0.4, 2.78, up);
-        sonPig.position.set(LX + 0.1 + Math.sin(sonPig.rotation.y) * wk * 1.1, 0, LZ + 0.3 + Math.cos(sonPig.rotation.y) * wk * 1.1); sonPig.position.y = hP(sonPig.position.x, sonPig.position.z) - lerp(0.5, 0, up);
+        sonPig.position.set(LX + 0.1 + Math.sin(sonPig.rotation.y) * wk * 1.1, 0, LZ - 0.05 + Math.cos(sonPig.rotation.y) * wk * 1.1); sonPig.position.y = hP(sonPig.position.x, sonPig.position.z) - lerp(0.5, 0, up);
         sonPig.parts.body.rotation.x = lerp(0.3, 0.05, up); sonPig.parts.head.position.z = lerp(0.1, 0, up);
         if (wk > 0) lib.walkPose(sonPig, wk * 0.8, 0.9); else { sonPig.parts.arms[0].rotation.set(lerp(-0.9, 0, up), 0, 0.3); sonPig.parts.arms[1].rotation.set(lerp(-0.9, 0, up), 0, -0.3); }
         P.sat = lerp(0.55, 0.95, hope); P.exposure = 0.95; P.contrast = 1.08;
-        const gy = hP(LX, LZ); if (t < T_RISE) cameraPath(camera, [[T_PIGS, [LX + 2.9, gy + 1.05, LZ + 3.8], [LX - 1.6, gy + 0.55, LZ - 3.0]], [T_RISE, [LX + 2.4, gy + 1.0, LZ + 3.2], [LX - 1.6, gy + 0.6, LZ - 3.0]]], t);
+        const gy = hP(LX, LZ); if (t < T_RISE) cameraPath(camera, [[T_PIGS, [LX + 4.4, gy + 1.25, LZ + 5.4], [LX - 1.8, gy + 0.55, LZ - 3.0]], [T_RISE, [LX + 3.8, gy + 1.15, LZ + 4.7], [LX - 1.8, gy + 0.6, LZ - 3.0]]], t);
         else cameraPath(camera, [[T_RISE, [-1.6, hP(-1.6, 10.5) + 1.4, 10.5], [3, 1.5, -6]], [C.run, [-1.2, hP(-1.2, 9.5) + 1.6, 9.5], [3.5, 2.0, -8]]], t);
         handheld(camera, t, 0.004);
       }

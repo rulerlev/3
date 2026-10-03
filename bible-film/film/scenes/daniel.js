@@ -166,14 +166,14 @@ export default function build({ THREE, lib, meta }) {
   { const dome = mesh(new THREE.SphereGeometry(16, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), brickM, gF, 0, 20, -14); dome.scale.set(1.2, 0.6, 1); }
   const inner = new THREE.MeshStandardMaterial({ map: brickTex, color: '#ff8a40', emissive: '#ff5a10', emissiveMap: brickTex, emissiveIntensity: 0.25, roughness: 1, side: THREE.BackSide });
   mesh(new THREE.BoxGeometry(26, 20, 22), inner, gF, 0, 10, -12.5);
-  const furnFires = [[-5, -11, 3.5, 700, 9], [5, -11, 3.5, 700, 9], [0, -15, 6, 900, 11], [-10, -8, 2.5, 400, 8], [10, -8, 2.5, 400, 8], [0, -4.5, 5, 500, 1.4]].map(([x, z, rad, n, h], i) => { const f = lib.fire({ count: n, radius: rad, height: h, size: 45, seed: 81 + i, intensity: i === 5 ? 0.35 : 0.3 }); f.position.set(x, 0, z); gF.add(f); return f; });
+  const furnFires = [[-5, -11, 3.5, 380, 9], [5, -11, 3.5, 380, 9], [0, -15, 6, 480, 11], [-10, -8, 2.5, 200, 8], [10, -8, 2.5, 200, 8], [0, -4.5, 5, 300, 1.4]].map(([x, z, rad, n, h], i) => { const f = lib.fire({ count: n, radius: rad, height: h, size: 48, seed: 81 + i, intensity: i === 5 ? 0.45 : 0.42 }); f.position.set(x, 0, z); gF.add(f); return f; });
   const walkers = [0, 1, 2, 3].map((i) => { const f = lib.figure({ height: 1.8, robe: i === 3 ? '#fff4e0' : '#1a0c06', skin: i === 3 ? '#fff0d8' : '#1a0c06', hood: i === 3, seed: 91 + i, glow: i === 3 ? 1.2 : 0, emissive: i === 3 ? '#ffe8c0' : '#000', belt: i === 3 ? '#ffe0a0' : '#0a0604' });
     if (i === 3) { f.parts.robeMat.emissiveIntensity = 1.6; f.traverse((o) => { if (o.isMesh && o.material !== f.parts.robeMat) o.material = f.parts.robeMat; }); }
     f.position.set(-4 + i * 2.6, 0, -7); gF.add(f); return f; });
   const furnL = new THREE.PointLight('#ff7a30', 120, 60, 1.5); furnL.position.set(0, 6, 3); gF.add(furnL);
   const mouthGlow = lib.glow('#ff9a40', 26, 0.5); mouthGlow.position.set(0, 4.5, 2); gF.add(mouthGlow);
   const fourthGlow = lib.glow('#fff0c8', 7, 0.7); gF.add(fourthGlow);
-  const embersF = lib.motes({ count: 900, box: [30, 18, 20], center: [0, 8, 4], size: 3, color: '#ff8a40', speed: 0.8, kind: 'embers', opacity: 0.9, seed: 99 }); gF.add(embersF);
+  const embersF = lib.motes({ count: 450, box: [30, 18, 20], center: [0, 8, 4], size: 3, color: '#ff8a40', speed: 0.8, kind: 'embers', opacity: 0.9, seed: 99 }); gF.add(embersF);
   mesh(new THREE.PlaneGeometry(200, 200).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#3a2618', roughness: 1 }), gF, 0, 0, 40);
   const guards = [-1, 1].map((s, i) => { const f = lib.figure({ height: 1.8, robe: '#1a1210', skin: '#2a1a10', hood: false, seed: 101 + i, staff: true }); f.position.set(s * 6.5, 0, 6 + i); f.rotation.y = s * 2.6; gF.add(f); return f; });
 
@@ -246,10 +246,10 @@ export default function build({ THREE, lib, meta }) {
   const banners = []; for (let i = 0; i < 6; i++) [-1, 1].forEach((s) => { const b = mesh(new THREE.PlaneGeometry(3, 12), new THREE.MeshStandardMaterial({ color: i % 2 ? '#2a3a7a' : '#7a1a1a', roughness: 0.9, side: THREE.DoubleSide }), gE, s * 14.4, 14, 34 - i * 12); b.rotation.y = -s * Math.PI / 2; banners.push(b); });
   const braziers = []; for (let i = 0; i < 6; i++) [-1, 1].forEach((s) => { const z = 34 - i * 12.8; const x = s * 4.4; box(gE, 0.4, 1.4, 0.4, x, 0, z, gold); const f = lib.fire({ count: 90, radius: 0.35, height: 1.2, size: 12, seed: 151 + i * 2 + (s > 0), intensity: 0.8 }); f.position.set(x, 1.5, z); gE.add(f);
     const gl = lib.glow('#ff9a40', 3.5, 0.45); gl.position.set(x, 2.2, z); gE.add(gl); braziers.push(gl); });
-  const hallL1 = new THREE.PointLight('#ffa050', 30, 40, 1.4); hallL1.position.set(0, 5, 18); gE.add(hallL1);
+  
   const hallL2 = new THREE.PointLight('#ffb060', 60, 40, 1.4); hallL2.position.set(0, 6, -20); gE.add(hallL2);
-  const shafts = [0, 1, 2, 3].map((i) => { const b = lib.lightBeam({ radiusTop: 1.2, radiusBottom: 3.5, length: 30, color: '#ffd8a0', opacity: 0.16 }); b.position.set(-14, 22, 30 - i * 16); b.rotation.set(0, 0, 0.6); gE.add(b); return b; });
-  const dustE = lib.motes({ count: 600, box: [24, 18, 70], center: [0, 9, 5], size: 1.6, color: '#ffd8a0', speed: 0.15, opacity: 0.6, seed: 161 }); gE.add(dustE);
+  const shafts = [0, 1].map((i) => { const b = lib.lightBeam({ radiusTop: 1.2, radiusBottom: 3.5, length: 30, color: '#ffd8a0', opacity: 0.2 }); b.position.set(-14, 22, 22 - i * 22); b.rotation.set(0, 0, 0.6); gE.add(b); return b; });
+  const dustE = lib.motes({ count: 350, box: [24, 18, 70], center: [0, 9, 5], size: 1.6, color: '#ffd8a0', speed: 0.15, opacity: 0.6, seed: 161 }); gE.add(dustE);
   // трон и царь
   const TZ = -26;
   box(gE, 12, 0.6, 7, 0, 0, TZ, gold); box(gE, 9, 0.6, 5.6, 0, 0.6, TZ - 0.3, gold); box(gE, 7, 0.6, 4.4, 0, 1.2, TZ - 0.6, gold);
@@ -387,7 +387,7 @@ export default function build({ THREE, lib, meta }) {
         } else { // ---- Есфирь
           show(gE); sky.visible = false;
           scene.fog.color.set('#1a0e08'); scene.fog.density = 0.016;
-          hemi.color.set('#8a6a50'); hemi.groundColor.set('#1a0e08'); hemi.intensity = 0.55; sun.color.set('#ffd8a0'); sun.intensity = 0.8; sun.position.set(-40, 50, 30); sun.target.position.set(0, 0, 0);
+          hemi.color.set('#9a7a5a'); hemi.groundColor.set('#2a1a10'); hemi.intensity = 0.7; sun.color.set('#ffc890'); sun.intensity = 1.1; sun.position.set(-40, 50, 30); sun.target.position.set(0, 0, 0);
           braziers.forEach((g, i) => (g.material.opacity = 0.4 + 0.08 * Math.sin(t * 9 + i)));
           const wk = clamp((t - C.esther) / 6.2); const qz = lerp(30, -15.5, lib.easeOut(wk) * 0.3 + wk * 0.7);
           queen.position.set(0, 0, qz); queen.rotation.y = Math.PI; lib.walkPose(queen, (t - C.esther) * 0.75, 0.5 * (1 - ramp(t, C.esther + 6.0, 0.6)));
