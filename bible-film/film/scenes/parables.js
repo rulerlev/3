@@ -280,7 +280,7 @@ export default function build({ THREE, lib, meta }) {
         sonPig.parts.body.rotation.x = lerp(0.3, 0.05, up); sonPig.parts.head.position.z = lerp(0.1, 0, up);
         if (wk > 0) lib.walkPose(sonPig, wk * 0.8, 0.9); else { sonPig.parts.arms[0].rotation.set(lerp(-0.9, 0, up), 0, 0.3); sonPig.parts.arms[1].rotation.set(lerp(-0.9, 0, up), 0, -0.3); }
         P.sat = lerp(0.55, 0.95, hope); P.exposure = 0.95; P.contrast = 1.08;
-        if (t < T_RISE) cameraPath(camera, [[T_PIGS, [3.6, hP(3.6, 9.6) + 0.95, 9.6], [-0.6, 1.25, 3.0]], [T_RISE, [3.0, hP(3.0, 9.0) + 0.9, 9.0], [-0.6, 1.3, 3.0]]], t);
+        const gy = hP(LX, LZ); if (t < T_RISE) cameraPath(camera, [[T_PIGS, [LX + 2.9, gy + 1.05, LZ + 3.8], [LX - 1.6, gy + 0.55, LZ - 3.0]], [T_RISE, [LX + 2.4, gy + 1.0, LZ + 3.2], [LX - 1.6, gy + 0.6, LZ - 3.0]]], t);
         else cameraPath(camera, [[T_RISE, [-1.6, hP(-1.6, 10.5) + 1.4, 10.5], [3, 1.5, -6]], [C.run, [-1.2, hP(-1.2, 9.5) + 1.6, 9.5], [3.5, 2.0, -8]]], t);
         handheld(camera, t, 0.004);
       }
