@@ -82,22 +82,22 @@ export default function build({ THREE, lib, meta }) {
   gC.add(priests);
   const NI = 230;
   const people = crowd({ count: NI, seed: 12, palette: ['#6a5440', '#7a6248', '#5a4636', '#8a7258', '#6b5a4a', '#7c5a40', '#4e5a6a', '#6a3a30', '#8a7a68'],
-    place: (i, r) => { let x, z; do { x = (r() - 0.5) * 64; z = 11 + r() * 16 + Math.abs(x) * 0.08; } while (Math.abs(x - 6) < 2.4 && z < 22); return { x, z, y: hC(x, z), ry: Math.atan2(-x * 0.5, -(z + 4)) + (r() - 0.5) * 0.5 }; } });
+    place: (i, r) => { let x, z; do { x = (r() - 0.5) * 64; z = 11 + r() * 16 + Math.abs(x) * 0.08; } while (x > -3.5 && x < 4.5); return { x, z, y: hC(x, z), ry: Math.atan2(-x * 0.5, -(z + 4)) + (r() - 0.5) * 0.5 }; } });
   gC.add(people);
   // жертвенник из камней + дрова + жертва
-  const stoneG = new THREE.BoxGeometry(0.62, 0.52, 0.62);
+  const stoneG = new THREE.IcosahedronGeometry(0.4, 0); stoneG.scale(1, 0.72, 1);
   function altar(P, seed, stoneMat) {
     const g = new THREE.Group(); g.position.copy(P); const r = rng(seed);
     const stones = new THREE.Group(); g.add(stones);
     for (let l = 0; l < 3; l++) for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { if (l === 2 && i === 1 && j === 1) continue;
-      const s = new THREE.Mesh(stoneG, stoneMat); s.position.set((i - 1) * 0.6 + (r() - 0.5) * 0.06, 0.26 + l * 0.5, (j - 1) * 0.6 + (r() - 0.5) * 0.06); s.rotation.set((r() - 0.5) * 0.12, (r() - 0.5) * 0.3, (r() - 0.5) * 0.12); s.scale.setScalar(0.92 + r() * 0.16); s.castShadow = true; stones.add(s); }
+      const s = new THREE.Mesh(stoneG, stoneMat); s.position.set((i - 1) * 0.6 + (r() - 0.5) * 0.1, 0.27 + l * 0.5, (j - 1) * 0.6 + (r() - 0.5) * 0.1); s.rotation.set((r() - 0.5) * 0.5, r() * 3, (r() - 0.5) * 0.5); s.scale.set(0.9 + r() * 0.3, 0.9 + r() * 0.25, 0.9 + r() * 0.3); s.castShadow = true; stones.add(s); }
     const wood = new THREE.Group(); g.add(wood); const wm = new THREE.MeshStandardMaterial({ color: '#4a3020', roughness: 1 });
     for (let l = 0; l < 3; l++) for (let i = 0; i < 4; i++) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 2.0, 6), wm); w.rotation.z = Math.PI / 2; if (l % 2) w.rotation.y = Math.PI / 2; const o = (i - 1.5) * 0.4; if (l % 2) w.position.set(o, 1.58 + l * 0.13, 0); else w.position.set(0, 1.58 + l * 0.13, o); wood.add(w); }
     
     gC.add(g); return { g, stones, wood };
   }
-  const stoneMB = new THREE.MeshStandardMaterial({ color: '#7a6a58', roughness: 0.95 });
-  const stoneME = new THREE.MeshStandardMaterial({ color: '#7a6e60', roughness: 0.95, emissive: '#ff5010', emissiveIntensity: 0 });
+  const stoneMB = new THREE.MeshStandardMaterial({ color: '#7a6a58', roughness: 0.95, flatShading: true });
+  const stoneME = new THREE.MeshStandardMaterial({ color: '#7a6e60', roughness: 0.95, flatShading: true, emissive: '#ff5010', emissiveIntensity: 0 });
   const altB = altar(AB, 3, stoneMB), altE = altar(AE, 4, stoneME);
   // ров с водой вокруг жертвенника Илии
   const trench = new THREE.Mesh(new THREE.RingGeometry(1.75, 2.45, 48), new THREE.MeshStandardMaterial({ color: '#2a2018', roughness: 1 })); trench.rotation.x = -Math.PI / 2; trench.position.set(AE.x, AE.y + 0.03, AE.z); gC.add(trench);
@@ -107,9 +107,9 @@ export default function build({ THREE, lib, meta }) {
     fragmentShader: lib.GLSL_NOISE + `uniform float time, level, glow; uniform vec3 sky, sunDir, sunCol; varying vec3 vW;
       void main(){ vec3 v = normalize(cameraPosition - vW); float fr = pow(1. - max(v.y, 0.), 3.);
         vec2 q = vW.xz*6.; float n = vnoise(q + time*1.3) + vnoise(q*1.7 - time);
-        vec3 c = mix(vec3(.04,.07,.1), sky, .35 + fr*.6);
-        float glint = pow(smoothstep(1.3, 1.95, n), 3.) * (.6 + fr);
-        c += sunCol*glint*1.4 + vec3(1.,.5,.2)*glow*(.4 + glint*2.);
+        vec3 c = mix(vec3(.05,.08,.12), mix(sky, vec3(.35,.45,.6), .5), .45 + fr*.5);
+        float tw = vnoise(q*3. + time*4.); float glint = pow(smoothstep(1.2, 1.9, n), 2.) * (.6 + fr) + pow(tw, 12.)*2.;
+        c += vec3(1.,.9,.8)*glint*.9 + vec3(1.,.5,.2)*glow*(.6 + glint*2.);
         gl_FragColor = vec4(c, level*(.85)); }` }));
   water.rotation.x = -Math.PI / 2; water.position.set(AE.x, AE.y + 0.07, AE.z); gC.add(water);
   // Илия
@@ -140,7 +140,7 @@ export default function build({ THREE, lib, meta }) {
           gl_FragColor = vec4(c*edge*(.45 + .9*n)*top*bot*opacity, 1.); }` });
     const mesh = new THREE.Mesh(geo, m); mesh.frustumCulled = false; return Object.assign(mesh, { u });
   }
-  const column = fireColumn(6.5, 2.6, 120, '#ffd080', '#ff5a10'); column.position.set(AE.x, AE.y + 120, AE.z); gC.add(column);
+  const column = fireColumn(6.5, 2.6, 120, '#ffb040', '#ff3a00'); column.position.set(AE.x, AE.y + 120, AE.z); gC.add(column);
   const core = fireColumn(2.2, 1.1, 120, '#fff0c8', '#ffa040');
   const heaven = lib.glow('#ffd8a0', 70, 0); heaven.position.set(AE.x, 34, AE.z - 6); gC.add(heaven); core.position.copy(column.position); gC.add(core);
   const shockU = { r: { value: 0 }, op: { value: 0 } };
@@ -148,8 +148,24 @@ export default function build({ THREE, lib, meta }) {
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv*2.-1.; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader: 'uniform float r, op; varying vec2 vUv; void main(){ float d = length(vUv); float ring = exp(-pow((d - .9)*14., 2.)) + .25*exp(-pow((d-.75)*6.,2.)); gl_FragColor = vec4(vec3(1.,.6,.25)*ring*op, 1.); }' }));
   shock.rotation.x = -Math.PI / 2; shock.position.set(AE.x, AE.y + 0.3, AE.z); gC.add(shock);
-  const flameE = lib.fire({ count: 900, radius: 1.1, height: 5.5, size: 130, seed: 31, intensity: 0 }); flameE.position.set(AE.x, AE.y + 1.6, AE.z); gC.add(flameE);
-  const flameCore = lib.fire({ count: 300, radius: 0.6, height: 3, size: 110, seed: 32, color1: '#fff2c8', color2: '#ff9030', intensity: 0 }); flameCore.position.copy(flameE.position); gC.add(flameCore);
+  const flameE = lib.fire({ count: 500, radius: 1.1, height: 5.5, size: 50, seed: 31, intensity: 0 }); flameE.position.set(AE.x, AE.y + 1.6, AE.z); gC.add(flameE);
+  const flameCore = lib.fire({ count: 200, radius: 0.6, height: 3, size: 50, seed: 32, color1: '#fff2c8', color2: '#ff9030', intensity: 0 }); flameCore.position.copy(flameE.position); gC.add(flameCore);
+  function flameSprite(seed) {
+    const u = { time: { value: 0 }, k: { value: 0 }, seed: { value: seed }, w: { value: 5 }, h: { value: 9 } };
+    const m = new THREE.ShaderMaterial({ uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'uniform float w, h; varying vec2 vUv; void main(){ vUv = uv; vec4 c = modelViewMatrix*vec4(0.,0.,0.,1.); c.xy += vec2(position.x*w, (position.y + .5)*h); gl_Position = projectionMatrix*c; }',
+      fragmentShader: lib.GLSL_NOISE + `uniform float time, k, seed; varying vec2 vUv;
+        void main(){ float x = (vUv.x - .5)*2.; float y = vUv.y;
+          float n = fbm2(vec2(x*2.2 + seed, y*2.6 - time*2.4)); float n2 = vnoise(vec2(x*4. - seed, y*5. - time*3.6));
+          float width = mix(.8, .04, pow(y, .75)) + (n - .5)*.45;
+          float body = smoothstep(width, width*.25, abs(x + (n2 - .5)*.45*y));
+          float f = body * smoothstep(1., .25, y + (n - .5)*.6) * smoothstep(0., .06, y);
+          f = clamp(f*1.5, 0., 1.);
+          vec3 c = vec3(1.4,1.1,.65)*smoothstep(.65, 1., f) + vec3(1.,.4,.07)*smoothstep(.2, .65, f) + vec3(.45,.07,.02)*smoothstep(0., .3, f);
+          gl_FragColor = vec4(c*f*k, 1.); }` });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), m); mesh.frustumCulled = false; return Object.assign(mesh, { u });
+  }
+  const flames = [1.3, 4.7, 8.1].map((sd, i) => { const f = flameSprite(sd); f.position.set(AE.x + [0, 0.5, -0.4][i], AE.y + 1.3, AE.z + [0, 0.3, -0.2][i]); f.renderOrder = 3; gC.add(f); return f; });
   const impactGlow = lib.glow('#ffc070', 30, 0); impactGlow.position.set(AE.x, AE.y + 3, AE.z); gC.add(impactGlow);
   const altarGlow = lib.glow('#ff8030', 12, 0); altarGlow.position.set(AE.x, AE.y + 2.4, AE.z); gC.add(altarGlow);
   const fireL = new THREE.PointLight('#ff9040', 0, 90, 1.3); fireL.position.set(AE.x, AE.y + 4, AE.z); gC.add(fireL);
@@ -187,7 +203,7 @@ export default function build({ THREE, lib, meta }) {
       void main(){ float n = fbm2(vP.xy*3.5 + vec2(0., -time*3.)) + .5*vnoise(vP.zy*5. - time*4.);
         float rim = pow(1. - abs(dot(normalize(vN), normalize(vV))), 2.);
         vec3 c = mix(vec3(.55,.08,.02), vec3(1.,.55,.15), smoothstep(.35, .9, n)); c = mix(c, vec3(1.3,1.05,.7), smoothstep(.85, 1.2, n) + rim*.6);
-        gl_FragColor = vec4(c*k*1.15, 1.); }` });
+        gl_FragColor = vec4(c*k*.8, 1.); }` });
   function horse() {
     const g = new THREE.Group();
     const body = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), fireSkin); body.scale.set(0.42, 0.5, 1.05); body.position.y = 1.55; g.add(body);
@@ -199,7 +215,7 @@ export default function build({ THREE, lib, meta }) {
     const tail = lib.fire({ count: 120, radius: 0.2, height: 1.4, size: 30, seed: 75, intensity: 1.2 }); tail.position.set(0, 1.6, -1.05); g.add(tail);
     g.legs = legs; return g;
   }
-  const chariot = new THREE.Group(); gW.add(chariot);
+  const chariot = new THREE.Group(); gW.add(chariot); chariot.scale.setScalar(1.7);
   const horses = [horse(), horse()]; horses[0].position.set(-0.75, 0, 2.6); horses[1].position.set(0.75, 0, 2.6); chariot.add(...horses);
   const cart = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 1.0, 14, 1, true, -Math.PI / 2, Math.PI), fireSkin); cart.position.set(0, 1.25, -0.2); chariot.add(cart);
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.6, 5), fireSkin); pole.rotation.x = Math.PI / 2; pole.position.set(0, 1.0, 1.3); chariot.add(pole);
@@ -220,35 +236,23 @@ export default function build({ THREE, lib, meta }) {
         vA = step(0., te)*(1. - vL); vec4 mv = modelViewMatrix*vec4(p,1.); gl_Position = projectionMatrix*mv; gl_PointSize = pxr*(4. + 8.*sd.y)*(40./max(-mv.z,1.)); }`,
     fragmentShader: `varying float vA; varying float vL; void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5,0.,d); vec3 c = mix(vec3(1.,.8,.4), vec3(.9,.25,.05), vL); gl_FragColor = vec4(c*a*a*vA*.9, 1.); }` }));
   trail.frustumCulled = false; gW.add(trail);
-  // вихрь: воронка из полупрозрачных оболочек с полосами, подсвеченная огнём
-  const vortU = { time: { value: 0 }, chPos: { value: V(0, 0, 0) }, op: { value: 0 } };
-  const vortMat = new THREE.ShaderMaterial({ uniforms: vortU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-    vertexShader: 'varying vec3 vW; varying vec2 vUv; varying vec3 vN; void main(){ vUv = uv; vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; vN = normalize(mat3(modelMatrix)*normal); gl_Position = projectionMatrix*viewMatrix*w; }',
-    fragmentShader: lib.GLSL_NOISE + `uniform float time, op; uniform vec3 chPos; varying vec3 vW; varying vec2 vUv; varying vec3 vN;
-      void main(){ float ang = vUv.x*6.2832; float y = vUv.y;
-        float sw = ang*2. + y*7. - time*(1.6 - y*.6);
-        float n = vnoise(vec2(sw*1.6, y*5. - time*.4)) * .6 + vnoise(vec2(sw*4., y*14.)) * .4;
-        float streak = smoothstep(.35, .85, n);
-        vec3 v = normalize(cameraPosition - vW); float edge = 1. - abs(dot(normalize(vN), v)); edge = .25 + .75*edge*edge;
-        float d = length(vW - chPos); float f = exp(-d*d/900.);
-        vec3 c = mix(vec3(.16,.13,.17), vec3(1.,.48,.18)*1.4, f) + vec3(.35,.2,.2)*smoothstep(.75,1.,n)*.4;
-        float a = op*streak*edge*smoothstep(0., .06, y)*(1. - smoothstep(.8, 1., y))*(.4 + .5*f);
-        gl_FragColor = vec4(c, a); }` });
-  const vortex = new THREE.Group(); gW.add(vortex);
-  [[20, 46, 0], [14, 38, 1]].forEach(([rb, rt, k]) => { const g = new THREE.CylinderGeometry(rt, rb, 100, 40, 12, true); g.translate(0, 50, 0); const m = new THREE.Mesh(g, vortMat); m.position.copy(WC); m.rotation.y = k * 2; m.frustumCulled = false; m.renderOrder = 2 + k; vortex.add(m); });
+  // вихрь: спираль облачных спрайтов, подсвеченных огнём колесницы
+  const vtex = [lib.cloudTexture(31), lib.cloudTexture(32), lib.cloudTexture(33)];
+  const vort = []; { const r = rng(53); for (let i = 0; i < 30; i++) { const m = new THREE.SpriteMaterial({ map: vtex[i % 3], color: '#5a4a50', transparent: true, opacity: 0, depthWrite: false, fog: false });
+    const sp = new THREE.Sprite(m); const h = (i + r() * 0.8) / 30; const sz = lerp(14, 46, h) * (0.8 + r() * 0.4); sp.scale.set(sz, sz * 0.7, 1); gW.add(sp); vort.push({ sp, h, a0: r() * 6.283, rr: 0.8 + r() * 0.4, o: 0.35 + r() * 0.35 }); } }
   const dustW = lib.motes({ count: 600, box: [70, 60, 70], center: [WC.x, WC.y + 30, WC.z], size: 4, color: '#ffb070', speed: 0.5, kind: 'rise', opacity: 0.0, seed: 52 }); gW.add(dustW);
   // плащ
   const cloakG = new THREE.PlaneGeometry(1.3, 1.5, 8, 8); const cloakBase = cloakG.attributes.position.array.slice();
   const cloak = new THREE.Mesh(cloakG, new THREE.MeshStandardMaterial({ color: '#4a3a2a', roughness: 1, side: THREE.DoubleSide })); gW.add(cloak);
   // Елисей
   const elisha = lib.figure({ height: 1.75, robe: '#5a4a3a', skin: '#7a5034', hood: true, seed: 92 });
-  const EP = V(WC.x - 8, 0, WC.z + 26); EP.y = hC(EP.x, EP.z); elisha.position.copy(EP); gW.add(elisha); elisha.parts.arms.forEach((a) => (a.rotation.order = 'YXZ'));
+  const EP = V(WC.x - 8, 0, WC.z + 30); EP.y = hC(EP.x, EP.z); elisha.position.copy(EP); gW.add(elisha); elisha.parts.arms.forEach((a) => (a.rotation.order = 'YXZ'));
 
   // ---------- образы ----------
-  const L0 = { top: '#2c4a78', hor: '#e8a066', bot: '#3a2a20', fog: '#b88466', fogD: 0.0022, sunY: 0.1, glow: 0.55, sun: 2.6, hemi: 0.75, exp: 0.86, stars: 0, cl: '#ffd8b8' };
+  const L0 = { top: '#2c4a78', hor: '#e8a066', bot: '#3a2a20', fog: '#b88466', fogD: 0.0011, sunY: 0.1, glow: 0.55, sun: 2.6, hemi: 0.75, exp: 0.86, stars: 0, cl: '#ffd8b8' };
   const L1 = { ...L0, hor: '#e88448', fog: '#a86a4c', sunY: 0.05, glow: 0.7, sun: 2.2, exp: 0.88, cl: '#ffb890' };
-  const L2 = { top: '#1e2a50', hor: '#c85a38', bot: '#2a1810', fog: '#7a4a40', fogD: 0.0024, sunY: 0.012, glow: 0.8, sun: 1.6, hemi: 0.5, exp: 0.9, stars: 0, cl: '#e88a70' };
-  const L3 = { top: '#0e1430', hor: '#7a3a34', bot: '#120a08', fog: '#3a2428', fogD: 0.0026, sunY: -0.05, glow: 0.35, sun: 0.25, hemi: 0.32, exp: 0.95, stars: 0.4, cl: '#8a5a5a' };
+  const L2 = { top: '#141a34', hor: '#8a3e2e', bot: '#2a1810', fog: '#5a3432', fogD: 0.0014, sunY: 0.008, glow: 0.45, sun: 1.7, hemi: 0.95, exp: 0.9, stars: 0, cl: '#e88a70' };
+  const L3 = { top: '#0a0e24', hor: '#5a2a2c', bot: '#0e0806', fog: '#2e1e22', fogD: 0.0016, sunY: -0.05, glow: 0.3, sun: 0.2, hemi: 0.3, exp: 0.95, stars: 0.4, cl: '#8a5a5a' };
   const L4 = { top: '#0a0e24', hor: '#4a2a3a', bot: '#0a0606', fog: '#2a1c24', fogD: 0.0018, sunY: -0.08, glow: 0.2, sun: 0.1, hemi: 0.25, exp: 0.95, stars: 0.8, cl: '#6a4a5a' };
   const looks = [[0, L0], [C.altars - 0.01, L0], [C.altars, L1], [15.9, L2], [C.fire, L2], [TF, L3], [C.chariot - 0.01, L3], [C.chariot, L4], [meta.dur, L4]];
   const tmp = V(0, 0, 0), tmp2 = V(0, 0, 0);
@@ -292,6 +296,7 @@ export default function build({ THREE, lib, meta }) {
         else {
           elijah.position.set(AE.x - 1.7, hC(AE.x - 1.7, AE.z + 1.1), AE.z + 1.1); elijah.rotation.y = 2.1;
           const pour = ramp(t, 15.8, 0.6) * (1 - ramp(t, 19.8, 0.5));
+          if (elijah.parts.staff) elijah.parts.staff.visible = pour < 0.05;
           if (pour > 0) {
             elijah.rotation.y = Math.atan2(AE.x - elijah.position.x, AE.z - elijah.position.z);
             elijah.parts.arms.forEach((a) => { a.rotation.x = -2.5 * pour; });
@@ -307,22 +312,23 @@ export default function build({ THREE, lib, meta }) {
           }
         }
         // --- вода во рву: наполнение → испарение
-        const lvl = ramp(t, 16.6, 3.2) * (1 - ramp(t, TF + 0.3, 7.0));
+        const lvl = ramp(t, 16.5, 1.8) * (1 - ramp(t, TF + 0.3, 7.0));
         waterU.level.value = lvl; waterU.sky.value.copy(Lk.hor); waterU.sunDir.value.copy(SUN);
         // --- огонь с неба
         const desc = clamp((t - C.fire - 0.05) / (TF - C.fire - 0.05)), colK = (desc > 0 ? 1 : 0) * (1 - ramp(t, TF + 0.6, 1.8));
         column.scale.y = core.scale.y = Math.max(0.001, 1 - Math.pow(1 - desc, 2.2)); column.visible = core.visible = colK > 0.001;
-        column.u.opacity.value = 1.5 * colK; core.u.opacity.value = 1.8 * colK;
+        column.u.opacity.value = 2.6 * colK; core.u.opacity.value = 2.2 * colK;
         heaven.material.opacity = ramp(t, C.fire - 0.4, 0.8) * (1 - ramp(t, TF + 0.4, 2.5)) * 0.7; column.scale.x = column.scale.z = 1 + 0.5 * ramp(t, TF, 0.3) * (1 - ramp(t, TF + 0.6, 1));
         const imp = ramp(t, TF - 0.05, 0.1) * (1 - ramp(t, TF + 0.15, 1.6));
-        impactGlow.material.opacity = imp * 0.55; impactGlow.scale.setScalar(20 + 25 * ramp(t, TF, 0.6));
-        S.post.flash = ramp(t, TF - 0.04, 0.06) * (1 - ramp(t, TF + 0.05, 0.5)) * 0.32;
+        impactGlow.material.opacity = imp * 0.35; impactGlow.scale.setScalar(20 + 25 * ramp(t, TF, 0.6));
+        S.post.flash = ramp(t, TF - 0.04, 0.06) * (1 - ramp(t, TF + 0.05, 0.5)) * 0.12;
         const sw = clamp((t - TF) / 1.6); shockU.r.value = sw; shock.scale.setScalar(2 + easeOut(sw) * 70); shockU.op.value = (t > TF ? 1 : 0) * (1 - sw) * 1.4; shock.visible = t > TF && sw < 1;
         const burn = ramp(t, TF - 0.05, 0.25); const settle = lerp(1.3, 0.75, ramp(t, TF + 1.0, 3)) * (1 - 0.35 * ramp(t, 27.5, 3));
-        flameE.u.intensity.value = burn * settle; flameCore.u.intensity.value = burn * settle * 0.8; flameE.visible = flameCore.visible = burn > 0.001;
+        flameE.u.intensity.value = burn * settle * 0.45; flameCore.u.intensity.value = burn * settle * 0.3;
+        flames.forEach((f, i) => { f.u.k.value = burn * settle * (i ? 0.8 : 1); const big = lerp(1.35, 1, ramp(t, TF + 0.3, 2.5)) * lerp(1, 0.7, ramp(t, 26, 4)); f.u.w.value = [5.2, 3.8, 2.6][i] * big; f.u.h.value = [9, 7, 5][i] * big; f.position.y = flameE.position.y - 0.3; f.visible = burn > 0.001; }); flameE.visible = flameCore.visible = burn > 0.001;
         flameE.u.height.value = lerp(9, 5.5, ramp(t, TF + 0.4, 2.5));
-        altarGlow.material.opacity = burn * 0.55 * (0.9 + 0.1 * Math.sin(t * 9));
-        fireL.intensity = burn * settle * 260 * (0.9 + 0.1 * Math.sin(t * 13)) + imp * 900;
+        altarGlow.material.opacity = burn * 0.25 * (0.9 + 0.1 * Math.sin(t * 9));
+        fireL.intensity = burn * settle * 260 * (0.9 + 0.1 * Math.sin(t * 13)) + imp * 300;
         stoneME.emissiveIntensity = ramp(t, TF + 1.5, 4) * 0.9;
         altE.wood.scale.setScalar(Math.max(0.001, 1 - ramp(t, 23.6, 2.4))); altE.wood.visible = t < 26.1;
         altE.stones.scale.y = lerp(1, 0.3, ramp(t, 25.6, 3.2)); altE.stones.scale.x = altE.stones.scale.z = lerp(1, 0.8, ramp(t, 25.6, 3.2));
@@ -335,7 +341,7 @@ export default function build({ THREE, lib, meta }) {
         if (t < 3.9) {
           // общий план: с моря на гору
           S.quote.y = 0.5;
-          cameraPath(camera, [[0, [46, 30, 92], [-6, -6, -40]], [3.9, [36, 23, 76], [-6, -5, -40]]], t);
+          cameraPath(camera, [[0, [46, 30, 92], [-6, 9, -40]], [3.9, [36, 23, 76], [-6, 8, -40]]], t);
         } else if (t < C.altars) {
           // жрецы (слева) против одного (справа), за ними закат над морем
           cameraPath(camera, [[3.9, [1.2, 1.5, 12.5], [-1.5, 3.2, -40]], [C.altars, [0.8, 1.6, 10.0], [-1.0, 3.2, -40]]], t);
@@ -344,12 +350,13 @@ export default function build({ THREE, lib, meta }) {
           cameraPath(camera, [[C.altars, [AB.x + 15, 3.2, AB.z + 15], [AB.x - 1, 1.6, AB.z - 6]], [15.9, [AB.x + 12, 2.8, AB.z + 16], [AB.x - 2, 1.8, AB.z - 6]]], t);
         } else if (t < C.fire) {
           // Илия заливает жертвенник водой — вода блестит во рву
-          cameraPath(camera, [[15.9, [AE.x + 3.2, 2.9, AE.z - 5.6], [AE.x - 0.8, 1.2, AE.z + 1.2]], [C.fire, [AE.x + 2.6, 2.6, AE.z - 4.8], [AE.x - 0.7, 1.3, AE.z + 1.2]]], t);
+          cameraPath(camera, [[15.9, [AE.x - 5.2, 2.7, AE.z - 4.2], [AE.x - 0.4, 1.2, AE.z + 0.6]], [C.fire, [AE.x - 4.4, 2.5, AE.z - 3.6], [AE.x - 0.4, 1.25, AE.z + 0.6]]], t);
         } else {
           // огонь с неба: общий план из-за толпы, потом медленный отъезд
           S.quote.y = 0.3;
           const shake = Math.max(0, 1 - (t - TF) / 1.2) * (t > TF ? 1 : 0);
-          cameraPath(camera, [[C.fire, [AE.x - 3.0, 2.4, 44], [AE.x - 1.0, 12.5, AE.z]], [TF, [AE.x - 3.0, 2.4, 43.5], [AE.x - 1.0, 12.5, AE.z]], [C.chariot, [AE.x - 3.6, 3.0, 48], [AE.x - 1.0, 11.5, AE.z]]], t);
+          S.post.bloom = 0.45; S.post.bloomThreshold = 0.9;
+          cameraPath(camera, [[C.fire, [AE.x - 3.0, 2.4, 40], [AE.x - 1.0, 12.0, AE.z]], [TF, [AE.x - 3.0, 2.4, 39.5], [AE.x - 1.0, 12.0, AE.z]], [TF + 2, [AE.x - 2.6, 2.3, 32], [AE.x - 0.8, 10.5, AE.z]], [C.chariot, [AE.x - 3.4, 2.8, 37], [AE.x - 1.0, 10.5, AE.z]]], t);
           camera.position.x += Math.sin(t * 47) * 0.12 * shake; camera.position.y += Math.sin(t * 61) * 0.1 * shake;
         }
         handheld(camera, t, 0.004);
@@ -360,7 +367,9 @@ export default function build({ THREE, lib, meta }) {
         horses.forEach((h, j) => h.legs.forEach((l, k) => (l.rotation.x = Math.sin(t * 9 + k * 1.3 + j * 0.6) * 0.75)));
         wheels.forEach((w) => (w.children.forEach((c) => (c.rotation.x = 0)), w.rotation.x = t * 6));
         prophet.parts.arms.forEach((a, s) => (a.rotation.x = -0.9 + Math.sin(t * 3 + s) * 0.05));
-        vortU.chPos.value.copy(chariot.position); vortU.op.value = ramp(t, CH_T0 - 0.2, 1.0); dustW.u.opacity.value = 0.6; vortex.rotation.y = 0;
+        dustW.u.opacity.value = 0.6; const vop = ramp(t, CH_T0 - 0.2, 1.0);
+        vort.forEach(({ sp, h, a0, rr, o }) => { const a = a0 + t * (1.3 - h * 0.7); const R = lerp(12, 34, h) * rr; sp.position.set(WC.x + Math.cos(a) * R, WC.y + 6 + h * 90, WC.z + Math.sin(a) * R);
+          const d = sp.position.distanceTo(chariot.position); const f = Math.exp(-d * d / 500); sp.material.color.setRGB(lerp(0.32, 1.0, f), lerp(0.26, 0.55, f), lerp(0.3, 0.3, f)); sp.material.opacity = o * vop * lerp(0.7, 1, f); sp.material.rotation = a * 0.3; });
         const fk = ramp(t, CH_T0, 0.6); fireSkinU.k.value = fk;
         // плащ: срывается и, кружась, падает к Елисею
         const cl = clamp((tau - 3.6) / 3.6);
@@ -376,11 +385,10 @@ export default function build({ THREE, lib, meta }) {
         elisha.parts.body.rotation.x = -0.12 * reach;
         // камера: от Елисея — низко, вверх за колесницей
         S.fadeOut = 1.2;
-        const camP = V(EP.x - 1.0, EP.y + 1.2, EP.z + 3.2);
-        const lk = chPath(Math.max(tau - 0.4, 0), V()).lerp(V(WC.x, WC.y + 20, WC.z), 0.25);
-        lk.y = lerp(lk.y, EP.y + 6, 0.15);
+        const camP = V(EP.x - 3.0, EP.y + 1.3, EP.z + 6.5);
+        const lk = chariot.position.clone().lerp(cloak.position, 0.35 * ramp(tau, 3.7, 1.6) * (cloak.visible ? 1 : 0)); lk.y += 1.0;
         camera.position.copy(camP).add(V(-tau * 0.25, tau * 0.12, tau * 0.45)); camera.lookAt(lk);
-        S.post.exposure = Lk.exp; S.post.bloom = 0.75; S.post.bloomThreshold = 0.75;
+        S.post.exposure = Lk.exp; S.post.bloom = 0.5; S.post.bloomThreshold = 0.92;
         handheld(camera, t, 0.006);
       }
     },
