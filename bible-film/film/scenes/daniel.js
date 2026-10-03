@@ -166,7 +166,7 @@ export default function build({ THREE, lib, meta }) {
   { const dome = mesh(new THREE.SphereGeometry(16, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), brickM, gF, 0, 20, -14); dome.scale.set(1.2, 0.6, 1); }
   const inner = new THREE.MeshStandardMaterial({ map: brickTex, color: '#ff8a40', emissive: '#ff5a10', emissiveMap: brickTex, emissiveIntensity: 0.25, roughness: 1, side: THREE.BackSide });
   mesh(new THREE.BoxGeometry(26, 20, 22), inner, gF, 0, 10, -12.5);
-  const furnFires = [[-5, -11, 3.5, 380, 9], [5, -11, 3.5, 380, 9], [0, -15, 6, 480, 11], [-10, -8, 2.5, 200, 8], [10, -8, 2.5, 200, 8], [0, -4.5, 5, 300, 1.4]].map(([x, z, rad, n, h], i) => { const f = lib.fire({ count: n, radius: rad, height: h, size: 48, seed: 81 + i, intensity: i === 5 ? 0.45 : 0.42 }); f.position.set(x, 0, z); gF.add(f); return f; });
+  const furnFires = [[-5, -11, 3.5, 380, 9], [5, -11, 3.5, 380, 9], [0, -15, 6, 480, 11], [-10, -8, 2.5, 200, 8], [10, -8, 2.5, 200, 8], [0, -4.5, 5, 300, 1.4]].map(([x, z, rad, n, h], i) => { const f = lib.fire({ count: n, radius: rad, height: h, size: 95, seed: 81 + i, intensity: i === 5 ? 0.2 : 0.17 }); f.position.set(x, 0, z); gF.add(f); return f; });
   const walkers = [0, 1, 2, 3].map((i) => { const f = lib.figure({ height: 1.8, robe: i === 3 ? '#fff4e0' : '#1a0c06', skin: i === 3 ? '#fff0d8' : '#1a0c06', hood: i === 3, seed: 91 + i, glow: i === 3 ? 1.2 : 0, emissive: i === 3 ? '#ffe8c0' : '#000', belt: i === 3 ? '#ffe0a0' : '#0a0604' });
     if (i === 3) { f.parts.robeMat.emissiveIntensity = 1.6; f.traverse((o) => { if (o.isMesh && o.material !== f.parts.robeMat) o.material = f.parts.robeMat; }); }
     f.position.set(-4 + i * 2.6, 0, -7); gF.add(f); return f; });
@@ -350,7 +350,7 @@ export default function build({ THREE, lib, meta }) {
         walkers.forEach((w, i) => { const ph = t * 0.55 + i * 0.27; w.position.set(-3.4 + i * 2.2 + Math.sin(t * 0.25 + i) * 0.4, 0, -5.5 + Math.sin(t * 0.3 + i * 2) * 0.5); w.rotation.y = 0.9 + Math.sin(t * 0.2) * 0.1; lib.walkPose(w, ph * 1.2, 0.8); });
         fourthGlow.position.set(walkers[3].position.x, 1.4, walkers[3].position.z); fourthGlow.material.opacity = 0.55 + 0.1 * Math.sin(t * 2);
         P.exposure = 0.9; P.bloom = 0.6; P.bloomThreshold = 0.82; P.contrast = 1.1;
-        cameraPath(camera, [[T_FURN, [2.5, 2.2, 24], [0, 3.6, -5]], [C.lions, [0.8, 1.8, 11.5], [0, 2.2, -6]]], t);
+        cameraPath(camera, [[T_FURN, [2.5, 2.2, 24], [0, 3.6, -5]], [C.lions, [0.6, 1.7, 9.5], [0, 2.0, -6]]], t);
         handheld(camera, t, 0.004);
       } else { // ---- ров со львами / Есфирь
         const den = t < C.esther;
@@ -379,8 +379,8 @@ export default function build({ THREE, lib, meta }) {
             cameraPath(camera, [[C.lions, [8.6, 3.0, 3.4], [0, 0.9, 0]], [C.angel, [7.6, 2.3, -4.6], [0, 1.0, 0]]], t);
             S.quote.y = 0.5;
           } else {
-            cameraPath(camera, [[C.angel, [8.4, 1.5, 3.6], [0, 2.9, 0]], [C.esther, [7.4, 1.25, 3.1], [0, 3.2, 0]]], t);
-            S.quote.y = 0.34;
+            cameraPath(camera, [[C.angel, [8.4, 2.3, 3.6], [0, 1.5, 0]], [C.esther, [7.4, 2.0, 3.1], [0, 1.7, 0]]], t);
+            S.quote.y = 0.3;
           }
           P.exposure = 1.0; P.bloom = 0.6; P.bloomThreshold = 0.75; P.sat = 0.85; P.tint = [0.95, 0.98, 1.05];
           handheld(camera, t, 0.003);
