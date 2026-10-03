@@ -82,7 +82,7 @@ def boomsub(t, x, gain=1.0):
     i, a, m = _span(t, len(x))
     if m > 0: lfe[i:i + m] += x[a:a + m] * gain
 
-DUCK_DEPTH, DUCK_SENS, DIP = float(os.environ.get('DUCK_DEPTH', 0.8)), 0.04, float(os.environ.get('DIP', 0.6))
+DUCK_DEPTH, DUCK_SENS, DIP = float(os.environ.get('DUCK_DEPTH', 0.85)), 0.04, float(os.environ.get('DIP', 0.6))
 BG_GAIN = float(os.environ.get('BG_GAIN', 0.7))
 
 # ---------- инструменты ----------
