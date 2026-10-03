@@ -2,3 +2,4 @@ node_modules/
 audio/
 data/verses.json
 *.mp4
+data/timeline_next.json

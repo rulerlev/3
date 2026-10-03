@@ -5,7 +5,7 @@
   "scripts": {
     "parse": "python3 tools/parse_bible.py",
     "tts": "python3 tools/tts.py",
-    "music": "python3 tools/music.py",
+    "sound": "python3 tools/sound.py",
     "render": "node tools/render.mjs",
     "preview": "node tools/render.mjs --preview"
   },
