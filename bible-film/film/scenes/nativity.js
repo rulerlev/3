@@ -232,7 +232,7 @@ export default function build({ THREE, lib, W, H, meta }) {
         landGlow.material.opacity = ramp(fallK, 0.98, 0.12) * 0.9 * (1 - ramp(fallK, 1.1, 0.5) * 0.4);
         landGlow.scale.setScalar(90 + ramp(fallK, 0.98, 0.4) * 80);
         townLights.children.forEach((g) => (g.material.opacity = 0.35 + ramp(fallK, 0.98, 0.3) * 0.4));
-        cameraPath(camera, [[0, [-60, 70, 140], [20, 90, -700]], [4.7, [-50, 66, 110], [60, 28, -700]]], ls);
+        cameraPath(camera, [[0, [-60, 42, 140], [20, 80, -700]], [4.7, [-50, 38, 110], [60, 52, -700]]], ls);
         handheld(camera, t, 0.004);
         P.exposure = 1.05; P.bloom = 1.0; P.bloomThreshold = 0.5; P.bloomRadius = 0.7; P.vignette = 0.45; P.tint = [0.96, 0.99, 1.05];
         S.quote.y = 0.36;

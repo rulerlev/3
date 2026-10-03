@@ -244,12 +244,12 @@ export default function build({ THREE, lib, meta }) {
       void main(){ float x = abs(vUv.x-.5)*2.; float n = fbm2(vec2(vUv.x*4., vUv.y*6. - time*3.));
         float core = smoothstep(.35, 0., x) * smoothstep(1., .9, vUv.y) * smoothstep(0., .04, vUv.y);
         float flame = smoothstep(.9, .1, x + (n-.5)*.9) * smoothstep(1., .6, vUv.y + (n-.5)*.2);
-        vec3 c = vec3(1.,.72,.35)*core*1.1 + mix(vec3(.9,.22,.02), vec3(1.,.55,.12), n)*flame*.9;
+        vec3 c = vec3(1.,.62,.25)*core*.75 + mix(vec3(.85,.18,.02), vec3(1.,.5,.1), n)*flame*.8;
         gl_FragColor = vec4(c*amt, 1.); }`,
   });
-  for (let k = 0; k < 2; k++) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 7.2), bladeMat); pl.position.y = 3.6; pl.rotation.y = k * Math.PI / 2; sword.add(pl); }
+  for (let k = 0; k < 2; k++) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 7.2), bladeMat); pl.position.y = 3.6; pl.rotation.y = k * Math.PI / 2; sword.add(pl); }
   const hilt = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.15, 0.15), new THREE.MeshBasicMaterial({ color: '#ffb050' })); hilt.position.y = 0.05; sword.add(hilt);
-  const swordFire = lib.fire({ count: 260, radius: 0.35, height: 7.5, size: 22, seed: 31, color1: '#ffa040', color2: '#ff3008' }); sword.add(swordFire);
+  const swordFire = lib.fire({ count: 260, radius: 0.35, height: 7.5, size: 22, seed: 31, color1: '#ff7a28', color2: '#ff2a06' }); sword.add(swordFire);
   const swordGlow = lib.glow('#ff8a30', 12, 0.5); swordGlow.position.y = 3.8; sword.add(swordGlow);
   const swordLight = new THREE.PointLight('#ff8a3a', 0, 40, 1.6); swordLight.position.set(0, 4, 2); gate.add(swordLight);
   const gardenGlow = lib.glow('#ffb860', 30, 0); gardenGlow.position.set(0, 5, GATE_Z - 14); scene.add(gardenGlow);
@@ -297,7 +297,7 @@ export default function build({ THREE, lib, meta }) {
 
       // фигуры
       adam.visible = eve.visible = true;
-      adam.parts.arms[0].rotation.x = adam.parts.arms[1].rotation.x = 0; eve.parts.arms[0].rotation.x = eve.parts.arms[1].rotation.x = 0;
+      for (const f of [adam, eve]) { lib.walkPose(f, 0, 0); f.parts.arms[0].rotation.set(0, 0, -0.12); f.parts.arms[1].rotation.set(0, 0, 0.12); }
       adam.parts.head.rotation.x = 0; eve.parts.head.rotation.x = 0;
       if (t < C.hide) {
         placeFig(eve, eveHome.x, eveHome.z, Math.PI * 1.08); placeFig(adam, adamHome.x, adamHome.z, Math.PI * 1.2);
@@ -310,7 +310,6 @@ export default function build({ THREE, lib, meta }) {
           placeFig(eve, ex, ez, Math.PI * 1.08); lib.walkPose(eve, (t - C.fruit) * 1.2, 1 - ramp(t, C.fruit + 1.2, 0.4));
           eve.parts.arms[1].rotation.x = -2.85 * reach; eve.parts.arms[1].rotation.z = 0.12 + 0.25 * reach;
           // плод сорван
-          if (t > C.hide - 0.9) { const k = ramp(t, C.hide - 0.9, 0.6); forb.position.lerp(new THREE.Vector3(ex - 0.1, 2.0, ez - 0.3), 0); }
         }
       } else {
         // уходят и прячутся за деревьями
@@ -333,8 +332,8 @@ export default function build({ THREE, lib, meta }) {
 
       // меч
       const sw = ramp(t, C.sword - 0.2, 1.2);
-      sword.visible = t > C.sword - 0.5; sword.rotation.y = t * 1.6; bladeU.amt.value = sw * (0.6 + 0.1 * Math.sin(t * 9)); if (t > C.sword - 0.5) { S.post.bloom = 0.5; S.post.bloomThreshold = 0.85; }
-      swordFire.u.intensity.value = sw * 0.55; swordGlow.material.opacity = sw * 0.55; swordLight.intensity = sw * 60 * (0.85 + 0.15 * Math.sin(t * 11));
+      sword.visible = t > C.sword - 0.5; sword.rotation.set(Math.sin(t * 0.9) * 0.12, t * 1.6, Math.sin(t * 1.3) * 0.1); bladeU.amt.value = sw * (0.6 + 0.1 * Math.sin(t * 9)); if (t > C.sword - 0.5) { S.post.bloom = 0.5; S.post.bloomThreshold = 0.85; }
+      swordFire.u.intensity.value = sw * 0.45; swordGlow.material.opacity = sw * 0.55; swordLight.intensity = sw * 60 * (0.85 + 0.15 * Math.sin(t * 11));
       ash.u.opacity.value = t > C.sword ? 0.5 : 0; gardenGlow.material.opacity = t > C.sword ? 0.35 : 0;
 
       // ---------- камера ----------

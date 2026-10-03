@@ -51,7 +51,7 @@ export default function build({ THREE, lib, meta }) {
   const crownGlow = lib.glow('#ffd890', 1.4, 0.5); crownGlow.position.y = 2.32; saul.add(crownGlow);
   const cloak = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.9, 14, 1, true), new THREE.MeshStandardMaterial({ color: '#5a1418', roughness: 0.9, side: THREE.DoubleSide })); cloak.position.set(0, 0.95 + 0.25, -0.08); saul.add(cloak);
   const sword = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.1, 0.02), new THREE.MeshStandardMaterial({ color: '#c0c0c8', metalness: 0.6, roughness: 0.3 })); sword.position.set(0, -0.9, 0.05); saul.parts.arms[1].add(sword);
-  g1.add(crowd(240, 11, (r) => { const a = (r() - .5) * 2.6 + Math.PI / 2; const d = 4.5 + Math.sqrt(r()) * 22; const x = Math.cos(a) * d, z = -4 + Math.sin(a) * d; return [x, h1(x, z) - 0.05, z, Math.atan2(-x, -4 - z)]; }));
+  g1.add(crowd(240, 11, (r) => { let x, z; do { const a = (r() - .5) * 2.6 + Math.PI / 2; const d = 4.5 + Math.sqrt(r()) * 22; x = Math.cos(a) * d; z = -4 + Math.sin(a) * d; } while (z > 9 && Math.abs(x - 1.8) < 2.6); return [x, h1(x, z) - 0.05, z, Math.atan2(-x, -4 - z)]; }));
   const motes1 = lib.motes({ count: 400, box: [40, 10, 30], center: [0, 4, 6], size: 3, color: '#ffd8a0', speed: 0.3, opacity: 0.5 }); g1.add(motes1);
 
   // ================= 2/3: долина Эла =================
@@ -150,6 +150,8 @@ export default function build({ THREE, lib, meta }) {
   return {
     scene, camera,
     update(t, S) {
+      // базовое состояние неба/света (кадры рендерятся в любом порядке — ничего не наследуем от другого плана)
+      sky.u.sunDir.value.set(0, -1, 0); sky.u.sunSize.value = 0.02; sky.u.sunGlow.value = 0; sky.u.starAmt.value = 0; sky.u.sunColor.value.set('#ffd9a0');
       const shot = t < C.goliath ? 1 : t < C.harp ? 2 : t < C.temple ? 4 : 5;
       g1.visible = shot === 1; g2.visible = shot === 2; g4.visible = shot === 4; g5.visible = shot === 5;
       S.post.bloomThreshold = 0.8; S.post.bloom = 0.55; S.post.exposure = 1.0;
@@ -199,7 +201,7 @@ export default function build({ THREE, lib, meta }) {
         handheld(camera, t * (1 + shake * 10), 0.004 + shake * 0.03);
       } else if (shot === 4) {
         sky.u.top.value.set('#020512'); sky.u.horizon.value.set('#141c34'); sky.u.bottom.value.set('#05060a'); sky.u.sunDir.value.set(-1.1, 0.42, -1).normalize(); sky.u.sunColor.value.set('#c8d8ff'); sky.u.sunSize.value = 0.02; sky.u.sunGlow.value = 0.22; sky.u.starAmt.value = 1.2;
-        moonGlow.position.copy(sky.u.sunDir.value).multiplyScalar(800).add(camera.position); moonGlow.material.opacity = 0.08;
+        moonGlow.material.opacity = 0.08;
         scene.fog.color.set('#0a1020'); scene.fog.density = 0.006;
         hemi.color.set('#5a70a8'); hemi.groundColor.set('#0a0a0c'); hemi.intensity = 0.9; sun.color.set('#a8c0ff'); sun.intensity = 1.1; sun.position.set(-150, 120, -300); sun.target.position.set(0, 0, 0);
         campLight.intensity = 7 * (0.85 + 0.15 * Math.sin(t * 11) * Math.sin(t * 7.1)); campGlow.material.opacity = 0.22 + 0.05 * Math.sin(t * 9);
@@ -228,6 +230,7 @@ export default function build({ THREE, lib, meta }) {
         handheld(camera, t, 0.003);
       }
       sky.position.copy(camera.position);
+      moonGlow.position.copy(sky.u.sunDir.value).multiplyScalar(800).add(camera.position);
     },
   };
 }

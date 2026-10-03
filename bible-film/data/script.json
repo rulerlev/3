@@ -527,7 +527,7 @@
   },
   {
    "id": "nativity",
-   "book": "JHN",
+   "book": "MAT",
    "chapter": 1,
    "pre": 0.5,
    "post": 1.2,
@@ -677,8 +677,8 @@
   },
   {
    "id": "resurrection",
-   "book": "MAT",
-   "chapter": 28,
+   "book": "JHN",
+   "chapter": 20,
    "pre": 1.5,
    "post": 1.2,
    "lines": [

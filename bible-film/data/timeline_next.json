@@ -5706,8 +5706,8 @@
    "id": "nativity",
    "start": 584.851,
    "dur": 31.244,
-   "book": "JHN",
-   "bookName": "Евангелие от Иоанна",
+   "book": "MAT",
+   "bookName": "Евангелие от Матфея",
    "chapter": 1,
    "cues": {
     "word": 0.5,
@@ -7217,9 +7217,9 @@
    "id": "resurrection",
    "start": 733.394,
    "dur": 21.687,
-   "book": "MAT",
-   "bookName": "Евангелие от Матфея",
-   "chapter": 28,
+   "book": "JHN",
+   "bookName": "Евангелие от Иоанна",
+   "chapter": 20,
    "cues": {
     "dawn": 1.5,
     "risen": 8.48,

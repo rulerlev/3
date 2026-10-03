@@ -118,8 +118,8 @@ export default function build({ THREE, lib, meta }) {
   const tBox = (w, h, d, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), tMat); b.position.set(x, y + h / 2, z); temple4.add(b); return b; };
   tBox(40, 3, 30, 0, -2.5, 0); const hall = tBox(9, 11, 22, 0, 0.5, -4); const porch = tBox(13, 16, 4, 0, 0.5, 9);
   const tPillars = [-4.5, 4.5].map((x) => { const pv = new THREE.Group(); pv.position.set(x, 0.5, 13); const c = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.7, 11, 12), tMat); c.position.y = 5.5; pv.add(c); temple4.add(pv); return pv; });
-  const fires4 = []; { const r = rng(33); const spots = [[0, -40, 12, 1.6], [-3, -32, 9, 1.2], [4, -46, 9, 1.2]]; for (let i = 0; i < 9; i++) { const a = r() * Math.PI * 2, d = 18 + r() * 45; spots.push([Math.cos(a) * d, -40 + Math.sin(a) * d * 0.8, 6 + r() * 6, 0.8 + r() * 0.5]); }
-    spots.forEach(([x, z, hgt, k], i) => { const f = lib.fire({ count: 140, radius: 2.5 * k, height: hgt, size: 60 * k, intensity: 0.75, seed: 200 + i, color1: '#ffcf7a', color2: '#ff3a0a' }); const y = i < 3 ? TY4 + 3 : h4(x, z); f.position.set(x, y, z); g4.add(f);
+  const fires4 = []; { const r = rng(33); const spots = [[0, -44, 18, 1.8], [-3, -32, 13, 1.4], [4, -50, 12, 1.3]]; for (let i = 0; i < 9; i++) { const a = r() * Math.PI * 2, d = 18 + r() * 45; spots.push([Math.cos(a) * d, -40 + Math.sin(a) * d * 0.8, 6 + r() * 6, 0.8 + r() * 0.5]); }
+    spots.forEach(([x, z, hgt, k], i) => { const f = lib.fire({ count: 140, radius: 2.5 * k, height: hgt, size: 60 * k, intensity: 0.75, seed: 200 + i, color1: '#ffcf7a', color2: '#ff3a0a' }); const y = i < 3 ? TY4 + 8 : h4(x, z); f.position.set(x, y, z); g4.add(f);
       const gl = lib.glow('#ff6a20', 22 * k, 0.35); gl.position.set(x, y + hgt * 0.4, z); g4.add(gl); fires4.push({ f, gl, i }); }); }
   const fireLight = new THREE.PointLight('#ff6a2a', 0, 220, 1.2); fireLight.position.set(0, TY4 + 14, -30); g4.add(fireLight);
   const embers4 = lib.motes({ count: 1500, box: [160, 60, 120], center: [0, TY4 + 20, -40], size: 14, color: '#ff8a3a', speed: 0.9, kind: 'embers', opacity: 0.8 }); g4.add(embers4);
@@ -169,8 +169,8 @@ export default function build({ THREE, lib, meta }) {
   const h7 = (x, z) => 18 * Math.exp(-Math.pow(Math.hypot(x, z + 30) / 55, 2)) + fbm(x * 0.012, z * 0.012, 4) * 6;
   g7.add(lib.terrain({ size: 700, seg: 120, center: [0, -100], heightFn: h7, colorFn: (x, z, y, sl) => new THREE.Color('#8a7050').lerp(new THREE.Color('#6a6a40'), clamp(noise2(x * 0.03, z * 0.03) + 0.3)).multiplyScalar(0.8) }));
   const wallMat7 = new THREE.MeshStandardMaterial({ color: '#d8c4a0', roughness: 0.9 });
-  const WR7 = 36, NW7 = 48, ROWS = 5; const wall7 = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), wallMat7, NW7 * ROWS); wall7.frustumCulled = false; g7.add(wall7);
-  const wall7D = []; { const r = rng(14); for (let i = 0; i < NW7; i++) for (let j = 0; j < ROWS; j++) { const a = Math.PI * 0.08 + (i + 0.5) / NW7 * Math.PI * 1.84; const x = Math.cos(a) * WR7, z = -30 + Math.sin(a) * WR7 * 0.9; wall7D.push({ a, x, z, j, y: h7(x, z) - 0.6 + j * 1.5, tb: (j < 2 ? 40 : 45.8 + (j - 2) * 1.7) + (i / NW7) * 1.5 + r() * 0.15 }); wall7.setColorAt(i * ROWS + j, new THREE.Color('#d8c4a0').multiplyScalar(0.8 + r() * 0.25)); } }
+  const WR7 = 36, NW7 = 30, ROWS = 5; const wall7 = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), wallMat7, NW7 * ROWS); wall7.frustumCulled = false; g7.add(wall7);
+  const wall7D = []; { const r = rng(14); for (let i = 0; i < NW7; i++) for (let j = 0; j < ROWS; j++) { const a = Math.PI * 0.04 + (i + 0.5) / NW7 * Math.PI * 0.92; const x = Math.cos(a) * WR7, z = -30 + Math.sin(a) * WR7 * 0.9; wall7D.push({ a, x, z, j, y: h7(x, z) - 0.6 + j * 1.5, tb: (j < 2 ? 40 : 45.8 + (j - 2) * 1.7) + (i / NW7) * 1.5 + r() * 0.15 }); wall7.setColorAt(i * ROWS + j, new THREE.Color('#d8c4a0').multiplyScalar(0.8 + r() * 0.25)); } }
   const TY7 = h7(0, -30);
   { const box = (w, h, d, x, y, z, m = wallMat7) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, TY7 + y + h / 2, z - 30); g7.add(b); return b; };
     box(30, 2, 22, 0, -1.5, 0); box(7, 8, 16, 0, 0.5, -2); box(10, 11, 3.5, 0, 0.5, 7.5);
@@ -179,13 +179,15 @@ export default function build({ THREE, lib, meta }) {
     const beam = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 0.2), pole); beam.position.set(0, TY7 + 12, -20); g7.add(beam); }
   const NWK = 60; const workers = new THREE.InstancedMesh(pplGeo, new THREE.MeshStandardMaterial({ color: '#5a4030', roughness: 1 }), NWK); workers.frustumCulled = false; g7.add(workers);
   const carried = new THREE.InstancedMesh(new THREE.BoxGeometry(0.5, 0.35, 0.4), wallMat7, NWK); carried.frustumCulled = false; g7.add(carried);
-  const wkD = []; { const r = rng(66); for (let i = 0; i < NWK; i++) { wkD.push([Math.PI * 0.15 + r() * Math.PI * 1.7, WR7 + 3 + r() * 6, r(), r() < 0.6]); workers.setColorAt(i, new THREE.Color().setHSL(0.06 + r() * 0.05, 0.3, 0.2 + r() * 0.2)); } }
+  const wkD = []; { const r = rng(66); for (let i = 0; i < NWK; i++) { wkD.push([Math.PI * 0.1 + r() * Math.PI * 0.8, WR7 + 2.5 + r() * 9, r(), r() < 0.6]); workers.setColorAt(i, new THREE.Color().setHSL(0.06 + r() * 0.05, 0.3, 0.2 + r() * 0.2)); } }
   const birds = lib.motes({ count: 30, box: [120, 20, 60], center: [0, 40, -60], size: 3, color: '#2a2018', speed: 0.4, opacity: 0.0 }); g7.add(birds);
   const morningHaze = lib.cloudLayer({ count: 10, area: [600, 200], y: 30, scale: [220, 50], seed: 19, color: '#ffd8b8', opacity: 0.35, center: [0, -200] }); g7.add(morningHaze);
 
   return {
     scene, camera,
     update(t, S) {
+      // базовое состояние неба/света (кадры рендерятся в любом порядке — ничего не наследуем от другого плана)
+      sky.u.sunDir.value.set(0, -1, 0); sky.u.sunSize.value = 0.02; sky.u.sunGlow.value = 0; sky.u.starAmt.value = 0; sky.u.sunColor.value.set('#ffd9a0');
       const shot = t < C.prophets ? 1 : t < C.isaiah ? 2 : t < C.fire ? 3 : t < C.bones ? 4 : t < C.return ? 5 : 7;
       g1.visible = shot === 1; g2.visible = shot === 2; g3.visible = shot === 3; g4.visible = shot === 4; g5.visible = shot === 5; g7.visible = shot === 7;
       S.post.bloomThreshold = 0.8; S.post.bloom = 0.55; S.post.exposure = 1.0; key.castShadow = false;
@@ -247,7 +249,7 @@ export default function build({ THREE, lib, meta }) {
         porch.rotation.x = col * 0.25; porch.position.y = 0.5 + 8 - col * 5; hall.position.y = 0.5 + 5.5 - col * 3; hall.rotation.z = col * 0.08;
         S.post.exposure = 1.0; S.post.bloom = 0.8; S.post.bloomThreshold = 0.65; S.post.sat = 1.1;
         if (t < T_TEMPLE) camPath([[C.fire, [4, 0.9, 72], [0, TY4 - 2, -30]], [T_TEMPLE, [-1, 1.0, 69], [-2, TY4 - 1, -30]]], t, h4);
-        else camPath([[T_TEMPLE, [16, TY4 + 4, 18], [0, TY4 + 7, -32]], [C.bones, [12, TY4 + 3, 12], [0, TY4 + 5, -34]]], t);
+        else camPath([[T_TEMPLE, [30, TY4 + 7, 30], [0, TY4 + 6, -36]], [C.bones, [24, TY4 + 5, 24], [0, TY4 + 4, -36]]], t);
         const shake = ramp(t, 33.4, 0.1) * (1 - ramp(t, 33.6, 1));
         handheld(camera, t * (1 + shake * 6), 0.004 + shake * 0.02);
       } else if (shot === 5) {
@@ -282,11 +284,11 @@ export default function build({ THREE, lib, meta }) {
       } else {
         const sunUp = ramp(t, C.return, 5);
         sky.u.top.value.set('#4a5a80').lerp(colA.set('#6a88b0'), sunUp); sky.u.horizon.value.set('#ff9a6a').lerp(colA.set('#ffc890'), sunUp); sky.u.bottom.value.set('#6a4a40');
-        sky.u.sunDir.value.set(0.7, lerp(0.0, 0.07, sunUp), -0.7).normalize(); sky.u.sunColor.value.set('#ffd8a0'); sky.u.sunSize.value = 0.03; sky.u.sunGlow.value = 0.9; sky.u.starAmt.value = 0;
+        sky.u.sunDir.value.set(-0.85, lerp(0.0, 0.08, sunUp), 0.25).normalize(); sky.u.sunColor.value.set('#ffd8a0'); sky.u.sunSize.value = 0.03; sky.u.sunGlow.value = 0.9; sky.u.starAmt.value = 0;
         scene.fog.color.set('#e0a888').lerp(colA.set('#f0cca8'), sunUp); scene.fog.density = 0.0022;
-        hemi.color.set('#a0b8e0'); hemi.groundColor.set('#5a4430'); hemi.intensity = 0.6; key.color.set('#ffd0a0'); key.intensity = 1.2 + sunUp * 1.2; key.position.set(250, lerp(25, 60, sunUp), -250); key.target.position.set(0, 0, -30);
+        hemi.color.set('#a0b8e0'); hemi.groundColor.set('#5a4430'); hemi.intensity = 0.6; key.color.set('#ffd0a0'); key.intensity = 1.2 + sunUp * 1.2; key.position.set(-260, lerp(25, 70, sunUp), 120); key.target.position.set(0, 0, -30);
         wall7D.forEach((w, i) => { const k = easeOut(clamp((t - w.tb) / 0.7)); const cx = Math.cos(w.a), cz = Math.sin(w.a);
-          wall7.setMatrixAt(i, tmpM.compose(tmpP.set(w.x, w.y, w.z), tmpQ.setFromEuler(eul.set(0, -w.a + Math.PI / 2, 0)), tmpS.set(2 * Math.PI * WR7 / NW7 * 1.02, 1.55 * Math.max(0.001, k), 3.0))); void cx; void cz; });
+          wall7.setMatrixAt(i, tmpM.compose(tmpP.set(w.x, w.y - (1 - k) * 1.6, w.z), tmpQ.setFromEuler(eul.set(0, -w.a + Math.PI / 2, 0)), tmpS.set(Math.PI * WR7 / NW7 * 1.02, 1.55, 3.0))); void cx; void cz; });
         wall7.instanceMatrix.needsUpdate = true;
         for (let i = 0; i < NWK; i++) { const [a0, rr, ph, carry] = wkD[i]; const a = a0 + Math.sin(t * 0.35 + ph * 6) * 0.06; const x = Math.cos(a) * rr, z = -30 + Math.sin(a) * rr * 0.9;
           const y = h7(x, z) - 0.05 + Math.abs(Math.sin(t * 4 + ph * 10)) * 0.04; const face = Math.cos(t * 0.35 + ph * 6) > 0 ? -a : -a + Math.PI;
@@ -294,7 +296,7 @@ export default function build({ THREE, lib, meta }) {
           carried.setMatrixAt(i, tmpM.compose(tmpP.set(x, carry ? y + 1.85 : -50, z), tmpQ, tmpS.setScalar(1))); }
         workers.instanceMatrix.needsUpdate = true; carried.instanceMatrix.needsUpdate = true;
         morningHaze.drift(t, 1.5, 0);
-        S.post.exposure = lerp(0.85, 1.0, sunUp); S.post.bloom = 0.55; S.post.bloomThreshold = 0.82; S.post.sat = 1.0; S.fadeOut = 1.6;
+        S.post.exposure = lerp(0.9, 1.08, sunUp); S.post.bloom = 0.55; S.post.bloomThreshold = 0.82; S.post.sat = 1.05; S.post.tint = [1.06, 1.0, 0.9]; S.fadeOut = 1.6;
         camPath([[C.return, [34, 9, 34], [0, TY7 + 1, -30]], [S.dur, [20, 14, 62], [0, TY7 + 3, -32]]], t, h7);
         handheld(camera, t, 0.003);
       }

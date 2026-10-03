@@ -248,7 +248,7 @@ export default function build({ THREE, lib, meta }) {
         // радуга и ковчег на горе
         const st = t - C.rainbow;
         sea.u.amp.value = lerp(0.9, 0.3, ramp(st, 0, 4)); sea.u.choppy.value = 1.0; sea.u.foam.value = lerp(0.12, 0.0, ramp(st, 0, 3));
-        sea.u.deep.value.set('#0a2630'); sea.u.shallow.value.set('#2a5a62'); sea.u.skyc.value.copy(Lk.hor).multiplyScalar(0.8); sea.u.sunColor.value.set('#ffd8a0');
+        sea.u.deep.value.set('#06161e'); sea.u.shallow.value.set('#1a3a44'); sea.u.skyc.value.copy(Lk.hor).multiplyScalar(0.42); sea.u.sunColor.value.set('#ffd8a0');
         sky.u.sunDir.value.set(0.55, Lk.sunY, -1).normalize(); sea.u.sunDir.value.copy(sky.u.sunDir.value); sun.position.set(110, 40, -200);
         sea.u.fogColor.value.copy(Lk.fog); sea.u.fogDensity.value = Lk.fogD;
         mountG.visible = true; rainFx.visible = false; bolt.visible = false; boltGlow.material.opacity = 0;

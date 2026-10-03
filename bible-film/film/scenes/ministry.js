@@ -75,7 +75,7 @@ export default function build({ THREE, lib, W, H, meta }) {
     for (let i = 0; i < p.count; i++) {
       v.fromBufferAttribute(p, i); const n = lib.fbm(v.x * 0.18 + seed, v.y * 0.22 + v.z * 0.1, 4);
       const top = clamp((v.y + Hh / 2) / Hh);
-      v.z += n * 0.9 + (v.z > 0 ? 0 : 0); v.x += lib.fbm(v.y * 0.2, v.z * 0.2 + seed, 3) * 1.2;
+      const ex = Math.abs(v.x) / (Wd / 2); v.z += n * 0.9 - Math.pow(ex, 3) * 3.2 * (v.z > 0 ? 1 : 0.3); v.x *= 1 - 0.12 * Math.pow(ex, 2) * top; v.x += lib.fbm(v.y * 0.2, v.z * 0.2 + seed, 3) * 1.2;
       v.y += lib.fbm(v.x * 0.15, v.z * 0.15 + seed * 2, 4) * 2.2 * top * top;
       if (v.z > 3.9) { const dx = Math.abs(v.x), dy = v.y + Hh / 2; if (dx < 2.6 && dy < 4.2) v.z -= (1 - Math.max(dx / 2.6, dy / 4.2)) * 0.6; }
       p.setXYZ(i, v.x, v.y, v.z);
@@ -83,7 +83,7 @@ export default function build({ THREE, lib, W, H, meta }) {
     geo.computeVertexNormals();
     { const cols = new Float32Array(p.count * 3); const base = new THREE.Color(opts.color || '#8a7a66'), cc = new THREE.Color();
       for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-        const k = 0.7 + 0.25 * lib.noise2(x * 0.5, y * 0.5 + z * 0.3) + 0.12 * Math.sin(y * 3.1 + lib.noise2(x * 0.2, 0) * 3) - clamp(-y / Hh * 0.6);
+        const k = 0.78 + 0.2 * lib.noise2(x * 0.5, y * 0.5 + z * 0.3) + 0.1 * Math.sin(y * 3.1 + lib.noise2(x * 0.2, 0) * 3) - clamp(-y / Hh) * 0.12;
         cc.copy(base).multiplyScalar(k); cols.set([cc.r, cc.g, cc.b], i * 3); }
       geo.setAttribute('color', new THREE.BufferAttribute(cols, 3)); }
     const rock = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })); rock.position.set(0, Hh / 2 - 0.4, -4); g.add(rock);
@@ -91,8 +91,9 @@ export default function build({ THREE, lib, W, H, meta }) {
     const doorMat = new THREE.MeshBasicMaterial({ color: '#000000' });
     const door = new THREE.Mesh(new THREE.ShapeGeometry(sh, 16), doorMat); door.position.set(0, 0, 0.55); g.add(door);
     const frame = new THREE.Mesh(new THREE.ShapeGeometry(sh, 16), new THREE.MeshStandardMaterial({ color: '#5a4e40', roughness: 1 })); frame.scale.set(1.35, 1.18, 1); frame.position.set(0, -0.05, 0.5); g.add(frame);
-    const stone = new THREE.Mesh(new THREE.CylinderGeometry(1.55, 1.55, 0.45, 28), new THREE.MeshStandardMaterial({ color: '#7a6c5a', roughness: 1 }));
-    stone.rotation.x = Math.PI / 2; stone.position.set(0, 1.5, 1.0); g.add(stone);
+    const stone = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.5, 28), new THREE.MeshStandardMaterial({ color: '#6a5c4c', roughness: 1 }));
+    stone.rotation.x = Math.PI / 2; stone.position.set(0, 1.55, 1.1); g.add(stone);
+    const sRim = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.09, 6, 28), stone.material); sRim.rotation.x = Math.PI / 2; sRim.position.y = 0.26; stone.add(sRim);
     const groove = new THREE.Mesh(new THREE.BoxGeometry(6.5, 0.3, 1.2), new THREE.MeshStandardMaterial({ color: '#5e5244', roughness: 1 })); groove.position.set(1.2, -0.1, 1.0); g.add(groove);
     return Object.assign(g, { door, doorMat, stone });
   }
@@ -162,11 +163,11 @@ export default function build({ THREE, lib, W, H, meta }) {
   G4.add(lib.terrain({ size: 600, seg: 150, center: [0, -60], heightFn: mountH,
     colorFn: (x, z, y, sl) => new THREE.Color('#6a6a32').lerp(new THREE.Color('#9a8a48'), clamp(lib.noise2(x * 0.08, z * 0.08) * 0.5 + 0.5)).lerp(new THREE.Color('#5a4a30'), sl * 1.5) }));
   const sermonCrowd = crowd({ count: 340, seed: 9, place: (i, r) => {
-    const z = -3 - Math.pow(r(), 0.85) * 26; const spread = 7 + (-z) * 0.4; const x = (r() - 0.5) * 2 * spread;
+    const z = -3 - Math.pow(r(), 0.85) * 27; const spread = 7 + (-z) * 0.4; let x = (r() - 0.5) * 2 * spread; const aisle = 1.1 + (-z) * 0.03; if (Math.abs(x) < aisle) x = Math.sign(x || 1) * (aisle + r() * 1.5);
     return { x, y: mountH(x, z) - 0.05, z, ry: Math.PI + Math.atan2(x, 46 + z) * 0.5 + (r() - 0.5) * 0.3, seated: r() < 0.85 };
   } });
   G4.add(sermonCrowd);
-  const preacher = jesusFig(0.5); preacher.position.set(0, mountH(0, -42) - 0.05, -42); G4.add(preacher);
+  const preacher = jesusFig(0.35); preacher.scale.setScalar(1.3); preacher.position.set(0, mountH(0, -42) - 0.05, -42); G4.add(preacher);
   const tree = (x, z, s, grp, hFn, col = '#3a4024') => { const t = new THREE.Group(); t.position.set(x, hFn(x, z), z); t.scale.setScalar(s); grp.add(t);
     const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.3, 2.4, 6), new THREE.MeshStandardMaterial({ color: '#3a2c20', roughness: 1 })); tr.position.y = 1.2; tr.rotation.z = 0.15; t.add(tr);
     const fm = new THREE.MeshStandardMaterial({ color: col, roughness: 1 }); [[0, 2.8, 0, 1.4], [0.9, 2.5, 0.3, 1.0], [-0.8, 2.6, -0.2, 1.1], [0.2, 3.3, -0.3, 0.9]].forEach(([a, b, c2, rr]) => { const s2 = new THREE.Mesh(new THREE.IcosahedronGeometry(rr, 1), fm); s2.position.set(a, b, c2); s2.scale.y = 0.7; t.add(s2); });
@@ -179,15 +180,15 @@ export default function build({ THREE, lib, W, H, meta }) {
   const tombH = (x, z) => lib.fbm(x * 0.04, z * 0.04, 4) * 0.8 + clamp((z - 30) / 40) * 3;
   G5.add(lib.terrain({ size: 240, seg: 90, center: [0, 20], heightFn: tombH,
     colorFn: (x, z) => new THREE.Color('#5a4c3a').lerp(new THREE.Color('#6e6040'), clamp(lib.noise2(x * 0.1, z * 0.1) * 0.5 + 0.5)) }));
-  const tomb = tombRock(3, { w: 16, h: 7, color: '#9a8670' }); G5.add(tomb);
-  { const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#4e4434', roughness: 1 })); hill.scale.set(34, 10, 16); hill.position.set(0, 0, -16); G5.add(hill); }
+  const tomb = tombRock(3, { w: 16, h: 7, color: '#b8a080' }); G5.add(tomb);
+  { const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#4e4434', roughness: 1 })); hill.scale.set(34, 10, 14); hill.position.set(0, 0, -18.5); G5.add(hill); }
   [[-14, 4, 1.1, '#2e3420'], [13, 6, 1.3, '#2e3420'], [-9, -2, 0.9, '#343a24']].forEach(([x, z, s, c]) => tree(x, z, s, G5, tombH, c));
   // кипарисы
   [[-18, -3, 7], [18, -2, 8], [-21, 1, 6]].forEach(([x, z, h]) => { const cy = new THREE.Mesh(new THREE.ConeGeometry(0.9, h, 8), new THREE.MeshStandardMaterial({ color: '#1e2618', roughness: 1 })); cy.position.set(x, h / 2, z); G5.add(cy); });
-  const mourners = []; const mournCols = ['#6a5446', '#5a4a40', '#74604e', '#4e443c', '#665a50', '#5e4c3e', '#7a6656'];
+  const mourners = []; const mournCols = ['#7a6250', '#5e5a6a', '#84705a', '#5a4e44', '#76685a', '#6e5444', '#8a7460'];
   for (let i = 0; i < 7; i++) {
     const f = lib.figure({ height: 1.65 + (i % 3) * 0.07, robe: mournCols[i], seed: 50 + i, hood: true });
-    const a = i / 7; f.position.set(-5.5 + Math.cos(a * 3) * 1.8 + i * 0.35, 0, 5.2 + Math.sin(a * 5) * 1.2); f.rotation.y = -0.4 + Math.sin(i) * 0.4;
+    const a = i / 7; f.position.set(-4.6 + Math.cos(a * 3) * 1.3 + i * 0.32, i === 2 || i === 5 ? -0.45 : 0, 6.4 + Math.sin(a * 5) * 1.1); f.rotation.y = -0.2 + Math.sin(i) * 0.5;
     f.parts.head.rotation.x = 0.4; if (f.parts.hood) f.parts.hood.rotation.x = 0.0; if (i % 3 === 0) f.parts.arms[0].rotation.x = -1.4;
     G5.add(f); mourners.push(f);
   }
@@ -300,12 +301,12 @@ export default function build({ THREE, lib, W, H, meta }) {
         // ---- Нагорная проповедь, золотой час
         show(3); sea.visible = lakeLand.visible = false;
         const ls = t - T3;
-        setSky('#3a5a88', '#ffae66', '#7a5a3a', [0.2, 0.24, -1], '#ffe2b0', 0.03, 0.8);
-        scene.fog.color.set('#d89a68'); scene.fog.density = 0.005;
+        setSky('#3a5a88', '#ffae66', '#7a5a3a', [0.4, 0.2, -1], '#ffe2b0', 0.026, 0.6);
+        scene.fog.color.set('#eaa86a'); scene.fog.density = 0.0035;
         hemi.color.set('#d0c0b0'); hemi.groundColor.set('#4a3a20'); hemi.intensity = 0.55; sun.color.set('#ffc890'); sun.intensity = 2.6; sun.position.set(0, 25, -200); sun.target.position.set(0, 0, 0);
         sermonCrowd.pose(t, 0.5);
         preacher.parts.arms.forEach((a, i) => { a.rotation.z = (i ? -1 : 1) * (0.5 + Math.sin(t * 0.6) * 0.05); a.rotation.x = -0.3; });
-        cameraPath(camera, [[0, [2.5, 10.5, 6], [0, 15.2, -42]], [T4 - T3, [1.0, 11.0, 0], [0, 15.6, -42]]], ls);
+        cameraPath(camera, [[0, [0.4, 3.6, 7], [0, 14.6, -42]], [T4 - T3, [0.2, 4.2, 2.5], [0, 15.0, -42]]], ls);
         handheld(camera, t, 0.005);
         S.quote.y = 0.66;
         P.exposure = 0.95; P.bloom = 0.6; P.bloomThreshold = 0.75; P.tint = [1.05, 0.99, 0.92]; P.vignette = 0.45;
@@ -315,7 +316,7 @@ export default function build({ THREE, lib, W, H, meta }) {
         const open = ramp(t, T6 + 0.6, 2.2), shine = ramp(t, T6 + 1.2, 1.6), out = ramp(t, T6 + 2.6, 1.3);
         setSky('#1e2240', '#c8704a', '#1a1414', [-0.4, 0.02, -1], '#ffb070', 0.03, 0.7, 0.15);
         scene.fog.color.set('#3a3040'); scene.fog.density = 0.012;
-        hemi.color.set('#8090c0'); hemi.groundColor.set('#3a2a1e'); hemi.intensity = 0.9; sun.color.set('#ffa070'); sun.intensity = 1.9; sun.position.set(-40, 10, 30); sun.target.position.set(0, 0, 0);
+        hemi.color.set('#8090c0'); hemi.groundColor.set('#3a2a1e'); hemi.intensity = 0.9; sun.color.set('#ffa070'); sun.intensity = 2.8; sun.position.set(-30, 12, 40); sun.target.position.set(0, 0, 0);
         tomb.stone.position.x = lerp(0, 3.4, open); tomb.stone.rotation.y = -open * 2.2;
         tomb.doorMat.color.set('#000').lerp(tmpC.set('#d8a060'), shine * 0.7);
         tombGlow.material.opacity = shine * 0.3; tombGlow.scale.setScalar(3 + shine * 2);

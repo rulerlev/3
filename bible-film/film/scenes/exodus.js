@@ -38,18 +38,21 @@ export default function build({ THREE, lib, meta }) {
 
   // ================= A. Купина =================
   const gA = new THREE.Group(); scene.add(gA);
-  const hM = (x, z) => 0.18 * (-z) + fbm(x * 0.04, z * 0.04, 5) * 4 + Math.abs(fbm(x * 0.012 + 3, z * 0.012, 3)) * 18 * lib.smooth(30, 120, -z) + lib.smooth(-20, -90, x) * 0;
+  const hM = (x, z) => 0.18 * (-z) + fbm(x * 0.04, z * 0.04, 5) * 4 * lib.smooth(6, 22, Math.hypot(x + 2, z - 1)) + fbm(x * 0.1, z * 0.1, 2) * 0.4 + Math.abs(fbm(x * 0.012 + 3, z * 0.012, 3)) * 18 * lib.smooth(30, 120, -z) + lib.smooth(-20, -90, x) * 0;
   const slope = lib.terrain({ size: 420, seg: 150, center: [0, -120], heightFn: hM, colorFn: (x, z, y, sl) => col('#5a4030').lerp(col('#8a6a48'), clamp(lib.noise2(x * 0.2, z * 0.2) * 0.5 + 0.5)).lerp(col('#3a2a22'), sl * 1.6) });
   gA.add(slope);
   const rockG = new THREE.DodecahedronGeometry(1, 0); const rockM = new THREE.MeshStandardMaterial({ color: '#4a3a30', roughness: 1, flatShading: true });
-  const rocks = new THREE.InstancedMesh(rockG, rockM, 60); { const r = rng(3), m4 = new THREE.Matrix4(); for (let i = 0; i < 60; i++) { const x = (r() - 0.5) * 70, z = -r() * 60 + 8; const s = 0.4 + r() * 1.6; m4.compose(new THREE.Vector3(x, hM(x, z) + s * 0.3, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(r() * 3, r() * 3, 0)), new THREE.Vector3(s, s * 0.7, s)); rocks.setMatrixAt(i, m4); } }
+  const rocks = new THREE.InstancedMesh(rockG, rockM, 60); { const r = rng(3), m4 = new THREE.Matrix4(); for (let i = 0; i < 60; i++) { const x = (r() - 0.5) * 70, z = -r() * 60 + 8; const s = 0.25 + r() * 0.8; if (Math.hypot(x + 10, z - 10) < 7) { i--; continue; } m4.compose(new THREE.Vector3(x, hM(x, z) + s * 0.3, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(r() * 3, r() * 3, 0)), new THREE.Vector3(s, s * 0.7, s)); rocks.setMatrixAt(i, m4); } }
   gA.add(rocks);
   const BUSH = new THREE.Vector3(2, hM(2, -6), -6);
-  const bushGeos = []; { const r = rng(21); for (let i = 0; i < 16; i++) { const a = r() * Math.PI * 2, l = 1.0 + r() * 1.0; const tip = [Math.cos(a) * l * 0.9, 0.6 + r() * 1.5, Math.sin(a) * l * 0.9]; bushGeos.push(taperTube([[0, 0, 0], [tip[0] * 0.4, tip[1] * 0.5, tip[2] * 0.4], tip], 0.08, 0.015, 6, 4)); } }
+  const bushGeos = []; { const r = rng(21); for (let i = 0; i < 22; i++) { const a = r() * Math.PI * 2, l = 0.35 + r() * 0.7, hgt = 0.9 + r() * 1.1;
+      const mid = [Math.cos(a) * l * 0.5, hgt * 0.5, Math.sin(a) * l * 0.5], tip = [Math.cos(a) * l, hgt, Math.sin(a) * l];
+      bushGeos.push(taperTube([[Math.cos(a) * 0.08, 0, Math.sin(a) * 0.08], [mid[0] * 0.8, mid[1], mid[2] * 0.8], tip], 0.06, 0.012, 6, 4));
+      for (let k = 0; k < 2; k++) { const b2 = a + (r() - 0.5) * 1.6, l2 = 0.25 + r() * 0.35; bushGeos.push(taperTube([mid, [mid[0] + Math.cos(b2) * l2 * 0.6, mid[1] + 0.25 + r() * 0.2, mid[2] + Math.sin(b2) * l2 * 0.6], [mid[0] + Math.cos(b2) * l2, mid[1] + 0.45 + r() * 0.4, mid[2] + Math.sin(b2) * l2]], 0.03, 0.008, 4, 3)); } } }
   const bush = new THREE.Mesh(mergeGeos(bushGeos), new THREE.MeshStandardMaterial({ color: '#1a120c', roughness: 1 })); bush.position.copy(BUSH); gA.add(bush);
-  const bushFire = [lib.fire({ count: 300, radius: 0.9, height: 2.6, size: 34, seed: 2 }), lib.fire({ count: 160, radius: 0.5, height: 3.4, size: 26, seed: 3, color1: '#fff0b0', color2: '#ff7a20' })];
+  const bushFire = [lib.fire({ count: 300, radius: 0.85, height: 2.2, size: 26, seed: 2, color1: '#ffb860', color2: '#ff4a10' }), lib.fire({ count: 120, radius: 0.5, height: 3.0, size: 20, seed: 3, color1: '#ffd080', color2: '#ff6a18' })];
   bushFire.forEach((f) => { f.position.copy(BUSH); gA.add(f); });
-  const bushGlow = lib.glow('#ff9a40', 9, 0); bushGlow.position.copy(BUSH).add(new THREE.Vector3(0, 1.4, 0)); gA.add(bushGlow);
+  const bushGlow = lib.glow('#ff8a30', 6, 0); bushGlow.position.copy(BUSH).add(new THREE.Vector3(0, 1.4, 0)); gA.add(bushGlow);
   const bushLight = new THREE.PointLight('#ffa050', 0, 40, 1.5); bushLight.position.copy(BUSH).add(new THREE.Vector3(0, 1.5, 0.5)); gA.add(bushLight);
   const sparks = lib.motes({ count: 120, box: [3, 6, 3], center: [BUSH.x, BUSH.y + 3, BUSH.z], size: 2.2, color: '#ffc070', speed: 0.5, kind: 'embers', opacity: 0, seed: 5 }); gA.add(sparks);
   const moses = lib.figure({ height: 1.8, robe: '#5a4232', skin: '#8a5a3c', hood: true, hoodColor: '#4a3a2c', staff: true, seed: 33 }); gA.add(moses);
@@ -85,7 +88,7 @@ export default function build({ THREE, lib, meta }) {
   // ================= C/D/E. Море =================
   const gS = new THREE.Group(); scene.add(gS);
   const W = 10, HW = 28;
-  const hS = (x, z) => { const beach = -0.4 + z * 0.07 + fbm(x * 0.05, z * 0.05, 3) * 0.5; const bed = -1.7 + fbm(x * 0.08, z * 0.08, 3) * 0.5 + fbm(x * 0.4, z * 0.4, 2) * 0.12; return lerp(bed, Math.min(beach, 3 + fbm(x * 0.02, z * 0.02, 3) * 3), lib.smooth(-8, 4, z)); };
+  const hS = (x, z) => { const beach = -0.4 + z * 0.07 + fbm(x * 0.05, z * 0.05, 3) * 0.5; const bed = -1.7 + (fbm(x * 0.08, z * 0.08, 3) * 0.5) * lib.smooth(W - 2, W + 6, Math.abs(x)) + fbm(x * 0.4, z * 0.4, 2) * 0.1; return lerp(bed, Math.min(beach, 3 + fbm(x * 0.02, z * 0.02, 3) * 3), lib.smooth(-8, 4, z)); };
   const seabed = lib.terrain({ size: 700, seg: 200, center: [0, -150], heightFn: hS, colorFn: (x, z, y) => col('#3a3026').lerp(col('#8a7458'), lib.smooth(-4, 6, z)).lerp(col('#2a2a22'), clamp(lib.noise2(x * 0.3, z * 0.3)) * lib.smooth(0, -10, z)) });
   gS.add(seabed);
   // вода с коридором: неравномерная сетка (густо у стен)
@@ -118,14 +121,14 @@ export default function build({ THREE, lib, meta }) {
     fragmentShader: lib.GLSL_NOISE + `uniform float time, glow, H, fogD; uniform vec3 deep, mid, glowC, skyc, moonDir, moonC, fogC; varying vec3 vW; varying vec3 vN; varying float vFace, vCrest, vRise;
       void main(){ vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n; vec3 v = normalize(cameraPosition - vW);
         float steep = 1. - abs(n.y); float fr = pow(1. - max(dot(n, v), 0.), 4.);
-        float flow = fbm2(vec2(vW.x*.12 + vW.z*.09, vW.y*.09 + time*1.4));
+        float flow = fbm2(vec2(vW.z*.07 + vW.x*.05, vW.y*.16 - time*.9));
         vec3 c = mix(deep, mid, .3 + .4*flow*steep);
         float hy = clamp(vW.y/H, 0., 1.);
         c += glowC * steep * glow * (.25 + .75*flow) * (.35 + .65*(1. - hy)) * vRise;
         c = mix(c, skyc, fr*.6);
         float sp = pow(max(dot(reflect(-v, n), moonDir), 0.), 60.); c += moonC*sp*.6;
         float streak = smoothstep(.55, .85, vnoise(vec2(vW.z*.7 + vW.x*.2, vW.y*.12 + time*2.2))) * steep * vRise;
-        c = mix(c, vec3(.75,.9,.95), streak*.22);
+        c = mix(c, vec3(.6,.85,.9), streak*.12);
         float foam = vCrest * smoothstep(.35, .7, vnoise(vec2(vW.z*.5, time*2.)) + .3);
         c = mix(c, vec3(.85,.95,1.), clamp(foam, 0., 1.)*.85);
         float d = length(vW - cameraPosition); c = mix(c, fogC, 1. - exp(-pow(d*fogD, 2.)));
@@ -150,37 +153,37 @@ export default function build({ THREE, lib, meta }) {
   spray.frustumCulled = false; gS.add(spray);
   const mist = lib.motes({ count: 900, box: [60, 26, 160], center: [0, 10, -70], size: 9, color: '#8ac8d8', speed: 0.6, opacity: 0, seed: 71 }); gS.add(mist);
   // народ (инстансы)
-  const personG = (() => { const b = new THREE.ConeGeometry(0.3, 1.45, 6); b.translate(0, 0.72, 0); const h = new THREE.SphereGeometry(0.13, 6, 5); h.translate(0, 1.55, 0); const hd = new THREE.ConeGeometry(0.18, 0.4, 6); hd.translate(0, 1.62, 0); return mergeGeos([b, h, hd]); })();
-  const NP = 800; const crowd = new THREE.InstancedMesh(personG, new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1 }), NP);
+  const personG = (() => { const b = new THREE.LatheGeometry([[0, 0], [0.3, 0], [0.27, 0.3], [0.21, 0.8], [0.19, 1.15], [0.23, 1.3], [0.16, 1.42], [0, 1.46]].map(([x, y]) => new THREE.Vector2(x, y)), 8); const h = new THREE.SphereGeometry(0.13, 8, 6); h.scale(1, 1.15, 1.05); h.translate(0, 1.6, 0.0); return mergeGeos([b, h]); })();
+  const NP = 800; const crowd = new THREE.InstancedMesh(personG, new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1, emissive: '#0c2226', emissiveIntensity: 0 }), NP);
   const crowdD = []; { const r = rng(91); const pal = ['#5a4636', '#3a3a44', '#6a5a42', '#4a3024', '#7a6a58', '#2e2a26'].map(col);
     for (let i = 0; i < NP; i++) { crowdD.push({ x: (r() - 0.5) * 2, z: r(), s: 0.85 + r() * 0.3, ph: r(), sp: 0.8 + r() * 0.4, a: (r() - 0.5) * 0.6 }); crowd.setColorAt(i, pal[i % pal.length].clone().multiplyScalar(0.8 + r() * 0.4)); } }
-  gS.add(crowd);
+  crowd.frustumCulled = false; gS.add(crowd);
   const mosesS = lib.figure({ height: 1.85, robe: '#5a4232', hood: true, staff: true, seed: 36 }); gS.add(mosesS);
   // факелы колесниц вдали и огненный столп
   const chariots = []; for (let i = 0; i < 26; i++) { const g = lib.glow('#ff8a3a', 3.5, 0.8); g.position.set(-70 + i * 5.5 + Math.sin(i * 7.1) * 2, 0, 180 + Math.sin(i * 3.3) * 8); gS.add(g); chariots.push(g); }
   const pillar = lib.lightBeam({ radiusTop: 4, radiusBottom: 7, length: 90, color: '#ffb060', opacity: 0.5 }); pillar.rotation.x = Math.PI; pillar.position.set(0, -2, 90); gS.add(pillar);
   const pillarGlow = lib.glow('#ff9a40', 40, 0.4); pillarGlow.position.set(0, 12, 90); gS.add(pillarGlow);
-  const crowdTorches = []; for (let i = 0; i < 14; i++) { const g = lib.glow('#ffa050', 2.4, 0.9); gS.add(g); crowdTorches.push(g); }
+  const crowdTorches = []; for (let i = 0; i < 14; i++) { const g = lib.glow('#ffa050', 1.3, 0.9); gS.add(g); crowdTorches.push(g); }
 
   // ---------- образы ----------
-  const LA = { top: '#1a1a38', hor: '#e08050', bot: '#2a1810', sunC: '#ff9a60', sunY: 0.015, glow: 0.8, fog: '#5a3a3a', fogD: 0.006, sunI: 1.0, sunL: '#ff9a70', hemi: 0.45, stars: 0.2, exp: 1.0, sat: 1.0 };
-  const LA2 = { ...LA, top: '#100f28', hor: '#9a4a40', sunY: -0.01, glow: 0.4, fog: '#2a1c24', sunI: 0.3, hemi: 0.3, stars: 0.5 };
+  const LA = { top: '#22224a', hor: '#f09058', bot: '#2a1810', sunC: '#ff9a60', sunY: 0.03, glow: 0.8, fog: '#7a4a40', fogD: 0.006, sunI: 1.6, sunL: '#ffa070', hemi: 0.75, stars: 0.2, exp: 1.0, sat: 1.0 };
+  const LA2 = { ...LA, top: '#100f28', hor: '#9a4a40', sunY: -0.01, glow: 0.4, fog: '#2a1c24', sunI: 0.3, hemi: 0.35, stars: 0.5 };
   const LB = { top: '#2a2440', hor: '#e89058', bot: '#3a2418', sunC: '#ffa060', sunY: 0.03, glow: 0.8, fog: '#a06048', fogD: 0.004, sunI: 1.4, sunL: '#ffb070', hemi: 0.5, stars: 0, exp: 0.95, sat: 1.0 };
   const LBr = { ...LB, top: '#2a0a10', hor: '#a02818', fog: '#5a1810', sunC: '#ff3010', sunL: '#ff4020', sunI: 1.0, sat: 1.1 };
-  const LBd = { ...LBr, top: '#020203', hor: '#0a0404', bot: '#020202', fog: '#050303', fogD: 0.012, glow: 0, sunI: 0, hemi: 0.05, exp: 0.9 };
+  const LBd = { ...LBr, top: '#020203', hor: '#0a0404', bot: '#020202', sunC: '#000000', fog: '#050303', fogD: 0.012, glow: 0, sunI: 0, hemi: 0.05, exp: 0.9 };
   const LBx = { ...LBd, top: '#04060c', hor: '#0e1420', fog: '#060a10', hemi: 0.12, sunL: '#6080c0' };
-  const LS = { top: '#030612', hor: '#101a30', bot: '#04060a', sunC: '#dfe8ff', sunY: 0.35, glow: 0.35, fog: '#0a1222', fogD: 0.006, sunI: 0.6, sunL: '#9ab0e0', hemi: 0.4, stars: 1.0, exp: 1.0, sat: 0.95 };
-  const looks = [[0, LA], [T_FIRE, LA], [T_FIRE + 3, LA2], [C.plagues - 0.01, LA2], [C.plagues, LB], [T_BLOOD, LB], [T_BLOOD + 1.2, LBr], [T_DARK, LBr], [T_DARK + 0.6, LBd], [T_DEATH, LBd], [T_DEATH + 1, LBx], [C.shore - 0.01, LBx], [C.shore, LS], [44, LS]];
+  const LS = { top: '#030612', hor: '#101a30', bot: '#04060a', sunC: '#dfe8ff', sunY: 0.35, glow: 0.35, fog: '#0a1222', fogD: 0.006, sunI: 1.0, sunL: '#9ab0e0', hemi: 0.6, stars: 1.0, exp: 1.0, sat: 0.95 };
+  const looks = [[0, LA], [T_FIRE, LA], [T_FIRE + 3, LA2], [C.plagues - 0.01, LA2], [C.plagues, LB], [T_BLOOD, LB], [T_BLOOD + 1.2, LBr], [T_DARK, LBr], [T_DARK + 0.6, LBd], [T_DEATH, LBd], [T_DEATH + 1, LBx], [C.shore - 0.01, LBx], [C.shore, LS], [C.walk - 0.01, LS], [C.walk, { ...LS, fogD: 0.0095 }], [44, { ...LS, fogD: 0.0095 }]];
 
   const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), v3 = new THREE.Vector3(), s3 = new THREE.Vector3();
-  const CAMV = 0.8, camZ = (t) => -16 - (t - C.walk) * CAMV, CAMX = 1.2;
-  function walkPos(d, t) { const L = 170; const m = ((d.z * L + (t - C.walk) * (1.25 * d.sp - CAMV)) % L + L) % L; const z = camZ(t) + 6 - m; let x = d.x * 6.8 + Math.sin(z * 0.1 + d.ph * 6) * 0.3; if (Math.abs(x - CAMX) < 1.3 && m < 12) x += x < CAMX ? -1.4 : 1.4; return [x, z]; }
+  const CAMV = 1.7, camZ = (t) => -16 - (t - C.walk) * CAMV, CAMX = 1.2;
+  function walkPos(d, t) { const L = 200; const m = ((d.z * L + (t - C.walk) * (1.0 * d.sp + 0.2 - CAMV)) % L + L) % L; const z = camZ(t) + 6 - m; let x = d.x * 6.8 + Math.sin(z * 0.1 + d.ph * 6) * 0.3; if (Math.abs(x - CAMX) < 1.4) x += x < CAMX ? -1.5 : 1.5; return [x, z]; }
   function placeCrowd(t, mode) {
     for (let i = 0; i < NP; i++) {
       const d = crowdD[i]; let x, z, y, ry = Math.PI, bob = 0;
       if (mode === 'shore') { x = d.x * 46; z = 8 + d.z * 34 + Math.abs(d.x) * 6; ry = Math.PI + d.a; bob = Math.abs(Math.sin(t * 2 + d.ph * 6)) * 0.03; }
       else { [x, z] = walkPos(d, t); ry = Math.PI + d.a * 0.3; bob = Math.abs(Math.sin((t * 1.6 * d.sp + d.ph) * Math.PI)) * 0.06; }
-      y = hS(x, z) + bob; m4.compose(v3.set(x, y, z), q4.setFromAxisAngle(s3.set(0, 1, 0), ry), s3.set(d.s, d.s, d.s)); crowd.setMatrixAt(i, m4);
+      const sc = mode === 'walk' && i % 3 ? 0 : d.s; y = hS(x, z) + bob; m4.compose(v3.set(x, y, z), q4.setFromAxisAngle(s3.set(0, 1, 0), ry), s3.set(sc, sc, sc)); crowd.setMatrixAt(i, m4);
     }
     crowd.instanceMatrix.needsUpdate = true;
   }
@@ -198,7 +201,7 @@ export default function build({ THREE, lib, meta }) {
       if (shot === 0) {
         sky.u.sunDir.value.set(0.5, Lk.sunY, -1).normalize(); sun.position.set(80, 20, -100);
         const fire = ramp(t, T_FIRE, 1.2);
-        bushFire[0].u.intensity.value = fire * 1.1; bushFire[1].u.intensity.value = fire * 0.8; bushGlow.material.opacity = fire * 0.5 * (0.9 + 0.1 * Math.sin(t * 9));
+        bushFire[0].u.intensity.value = fire * 0.75; bushFire[1].u.intensity.value = fire * 0.55; bushGlow.material.opacity = fire * 0.35 * (0.9 + 0.1 * Math.sin(t * 9));
         bushLight.intensity = fire * 40 * (0.9 + 0.1 * Math.sin(t * 13)); sparks.u.opacity.value = fire * 0.8;
         bushFire.forEach((f) => (f.visible = fire > 0.001));
         // Моисей подходит, затем преклоняет колени
@@ -207,8 +210,9 @@ export default function build({ THREE, lib, meta }) {
         moses.position.set(mx, hM(mx, mz) - kneel * 0.55, mz); moses.rotation.y = Math.atan2(BUSH.x - mx, BUSH.z - mz);
         moses.rotation.x = kneel * 0.32; lib.walkPose(moses, t * 0.9, 1 - ramp(t, 6.5, 0.6));
         moses.parts.arms[0].rotation.x = -kneel * 0.9; moses.parts.arms[0].rotation.z = -0.2;
-        if (t < T_FIRE) cameraPath(camera, [[0, [-26, 8, 26], [0, 3, -6]], [T_FIRE, [-20, 6, 18], [0, 3, -6]]], t);
-        else cameraPath(camera, [[T_FIRE, [-9.5, 2.0, 6.5], [0.4, 1.9, -4.5]], [C.plagues, [-7.6, 1.7, 4.4], [0.6, 1.9, -5]]], t);
+        const by = BUSH.y;
+        if (t < T_FIRE) cameraPath(camera, [[0, [-9, hM(-9, 11) + 0.9, 11], [-2, by + 2.6, -3]], [T_FIRE, [-7.5, hM(-7.5, 8) + 0.8, 8], [-0.5, by + 2.2, -4]]], t);
+        else cameraPath(camera, [[T_FIRE, [6.4, Math.max(hM(6.4, 1.0), by) + 1.5, 1.0], [-0.1, by + 1.1, -5.0]], [C.plagues, [5.3, Math.max(hM(5.3, -0.1), by) + 1.3, -0.1], [-0.1, by + 1.0, -5.2]]], t);
         handheld(camera, t, 0.004);
       } else if (shot === 1) {
         sky.u.sunDir.value.set(0.35, Lk.sunY, -1).normalize(); sun.position.set(80, 20, -200);
@@ -235,20 +239,20 @@ export default function build({ THREE, lib, meta }) {
         chariots.forEach((g, i) => { const z = lerp(180, 150, ramp(t, C.shore, 15)) + Math.sin(i * 3.3) * 8; g.position.set(g.position.x, hS(g.position.x, Math.min(z, 60)) + 3 + Math.sin(i) * 1.5, z); g.material.opacity = 0.7 + 0.3 * Math.sin(t * 6 + i * 2); });
         pillar.u.opacity.value = 0.45 * ramp(t, C.shore + 1, 2); pillarGlow.material.opacity = 0.4 * ramp(t, C.shore + 1, 2);
         // народ
-        const walking = t >= C.walk; placeCrowd(t, walking ? 'walk' : 'shore');
+        const walking = t >= C.walk; placeCrowd(t, walking ? 'walk' : 'shore'); crowd.material.emissiveIntensity = ramp(t, C.part + 1, 2) * 1.0;
         crowdTorches.forEach((g, i) => { const d = crowdD[i * 37 % NP]; if (!walking) g.position.set(d.x * 40, hS(d.x * 40, 14 + d.z * 26) + 2.4, 14 + d.z * 26); else { const [x, z] = walkPos(d, t); g.position.set(x + 0.35, hS(x, z) + 2.0, z); } g.material.opacity = 0.75 + 0.25 * Math.sin(t * 9 + i); });
         // Моисей у кромки воды, поднимает посох
         mosesS.position.set(0.5, hS(0.5, 5.5), 5.5); mosesS.rotation.y = Math.PI; mosesS.visible = !walking;
         const raise = ramp(t, C.part - 0.6, 0.8); mosesS.parts.arms[1].rotation.x = -0.25 - raise * 2.6; mosesS.parts.arms[0].rotation.x = -raise * 1.2; mosesS.parts.arms[0].rotation.z = -0.6 * raise;
         if (t < C.part) {
-          cameraPath(camera, [[C.shore, [44, 7, 30], [-4, 1.5, 6]], [C.part, [38, 6.5, 22], [-6, 1.5, 2]]], t);
+          cameraPath(camera, [[C.shore, [14, 3.6, -14], [-3, 3.2, 30]], [C.part, [11, 3.2, -10], [-2, 3.0, 30]]], t);
           handheld(camera, t, 0.004);
         } else if (t < C.walk) {
-          cameraPath(camera, [[C.part, [0.5, 9, 30], [0, 6, -80]], [C.walk, [0.5, 15, 22], [0, 7, -80]]], t);
+          cameraPath(camera, [[C.part, [0.9, 2.9, 14.5], [0, 7, -80]], [C.walk, [0.9, 9, 19], [0, 5, -80]]], t);
           handheld(camera, t, 0.006 + 0.004 * Math.sin(t * 3));
         } else {
-          const k = t - C.walk, cz = camZ(t); camera.position.set(CAMX + Math.sin(k * 0.2) * 0.3, hS(CAMX, cz) + 1.5, cz);
-          camera.lookAt(0, 4.2 + k * 0.06, cz - 90);
+          const k = t - C.walk, cz = camZ(t); camera.position.set(CAMX + Math.sin(k * 0.2) * 0.3, hS(CAMX, cz) + 2.3, cz);
+          camera.lookAt(0, 3.4 + k * 0.05, cz - 90);
           handheld(camera, t, 0.004);
         }
       }

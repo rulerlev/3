@@ -132,7 +132,11 @@ export default function build({ THREE, lib, meta }) {
   const starsB = lib.starfield({ count: 4000, radius: 1400, size: 2.2, minY: 0.03 }); gB.add(starsB);
   const mistB = lib.motes({ count: 700, box: [60, 6, 60], center: [0, 1.5, 0], size: 5, color: '#8a9ab8', speed: 0.2, opacity: 0.25 }); gB.add(mistB);
   // ключевые моменты: индекс камня (непрерывный) по времени — точно по словам
-  const LOOPK = [[C.loop, 5], [14.2, 6], [15.34, 7], [17.34, 8], [19.38, 9], [20.11, 10]];
+  // времена фраз цикла — из пословных таймингов реплики (запасные значения на случай иной разметки)
+  const loopWords = (meta.lines.find((l) => Math.abs(l.start - C.loop) < 0.1) || {}).words || [];
+  const wAt = (i, def) => (loopWords[i] && loopWords[i].s) || def;
+  const LOOPK = [[C.loop, 5], [wAt(3, 14.2), 6], [wAt(5, 15.34), 7], [wAt(9, 17.34), 8], [wAt(12, 19.38), 9], [wAt(14, 20.11), 10]];
+  const T_FORGET = wAt(13, 19.86);
   const orbIdx = (t, lead = 0.65) => {
     if (t < C.loop) { // круг-демонстрация: от «круг» до первой реплики цикла
       const k = ease(clamp((t - 8.4) / (C.loop - 8.4))); return k * 5;
@@ -173,10 +177,12 @@ export default function build({ THREE, lib, meta }) {
   return {
     scene, camera,
     update(t, S) {
+      // базовое состояние неба/света (кадры рендерятся в любом порядке — ничего не наследуем от другого плана)
+      sky.u.sunDir.value.set(0, -1, 0); sky.u.sunSize.value = 0.02; sky.u.sunGlow.value = 0; sky.u.starAmt.value = 0; sky.u.sunColor.value.set('#ffd9a0');
       const shot = t < C.cycle ? 0 : t < C.names ? 1 : 2;
       gA.visible = shot === 0; gB.visible = shot === 1; gC.visible = shot === 2;
       if (shot === 0) {
-        sky.u.top.value.set('#4a6a90'); sky.u.horizon.value.set('#f2b878'); sky.u.bottom.value.set('#6a4a32'); sky.u.sunDir.value.set(-1, 0.1, -0.5).normalize(); sky.u.sunGlow.value = 1.0; sky.u.starAmt.value = 0;
+        sky.u.top.value.set('#4a6a90'); sky.u.horizon.value.set('#f2b878'); sky.u.bottom.value.set('#6a4a32'); sky.u.sunDir.value.set(-1, 0.1, -0.5).normalize(); sky.u.sunGlow.value = 1.0; sky.u.starAmt.value = 0; sky.u.sunSize.value = 0.03; sky.u.sunColor.value.set('#ffd6a0');
         scene.fog.color.set('#d8a878'); scene.fog.density = 0.0011;
         hemi.color.set('#9ab4d8'); hemi.groundColor.set('#4a3424'); hemi.intensity = 0.7; sun.color.set('#ffcf98'); sun.intensity = 2.4; sun.position.set(-300, 70, -150);
         // процессия
@@ -216,7 +222,7 @@ export default function build({ THREE, lib, meta }) {
       } else if (shot === 1) {
         sky.u.top.value.set('#040814'); sky.u.horizon.value.set('#26304a'); sky.u.bottom.value.set('#07080a'); sky.u.sunGlow.value = 0; sky.u.starAmt.value = 0.6;
         scene.fog.color.set('#121828'); scene.fog.density = 0.009;
-        hemi.color.set('#5a6a90'); hemi.groundColor.set('#0a0a08'); hemi.intensity = 1.6; sun.intensity = 3.2; sun.color.set('#9ab0e0'); sun.position.set(-120, 160, -200);
+        hemi.color.set('#5a6a90'); hemi.groundColor.set('#0a0a08'); hemi.intensity = 1.5; sun.intensity = 2.2; sun.color.set('#9ab0e0'); sun.position.set(-120, 160, -200);
         const idx = orbIdx(t); const theta = stoneAng(0) - idx / 5 * Math.PI * 2;
         const ci = ((Math.round(idx) % 5) + 5) % 5; const frac = idx - Math.floor(idx);
         const oc = colA.copy(SCOL[Math.floor(idx) % 5]).lerp(SCOL[(Math.floor(idx) + 1) % 5], frac);
@@ -226,14 +232,14 @@ export default function build({ THREE, lib, meta }) {
         orb.material.color.copy(oc); orb.material.opacity = appear * 0.9; orbCore.material.opacity = appear * 0.8; orbLight.color.copy(oc); orbLight.intensity = appear * 9;
         orb.scale.setScalar(2.6 * (1 + 0.08 * Math.sin(t * 5)));
         ringU.orb.value = theta; ringU.amt.value = appear * 0.9; ringU.color.value.copy(oc);
-        const lapReset = t > 19.86;
+        const lapReset = t > T_FORGET;
         stones.forEach((s, i) => {
           let d = Math.abs(((idx - i) % 5 + 7.5) % 5 - 2.5); const near = Math.exp(-d * d * 6);
           let visited = 0; if (t >= C.loop && !lapReset) { const vi = LOOPK.findIndex(([, k]) => ((k % 5) === i)); if (vi >= 0 && t >= LOOPK[vi][0]) visited = 0.22; }
           const L = Math.max(near * appear, visited);
           const c = colA.copy(SCOL[i]).lerp(WHITE, 0.45).multiplyScalar(0.04 + L * 3.2);
           s.front.material.color.copy(c); s.back.material.color.copy(c);
-          s.halo.material.opacity = L * 0.16; s.light.intensity = L * 5;
+          s.halo.material.opacity = L * 0.14; s.light.intensity = L * 3.5;
         });
         starsB.u.opacity.value = 0.8; mistB.u.opacity.value = 0.22;
         S.post.exposure = 1.05; S.post.bloom = 0.85; S.post.bloomThreshold = 0.6; S.post.sat = 1.0;
@@ -250,7 +256,7 @@ export default function build({ THREE, lib, meta }) {
       } else {
         const tn = t - C.names; const dusk = ramp(t, 24.5, 6);
         sky.u.top.value.set('#2a2440').lerp(colA.set('#0a0814'), dusk); sky.u.horizon.value.set('#ff8a40').lerp(colA.set('#7a2a1a'), dusk); sky.u.bottom.value.set('#3a1a10');
-        sky.u.sunDir.value.set(0.05, lerp(0.035, -0.03, dusk), -1).normalize(); sky.u.sunColor.value.set('#ffb070'); sky.u.sunSize.value = 0.05; sky.u.sunGlow.value = lerp(1.15, 0.6, dusk); sky.u.starAmt.value = dusk * 0.5;
+        sky.u.sunDir.value.set(0.05, lerp(0.035, -0.03, dusk), -1).normalize(); sky.u.sunColor.value.set('#ffb070'); sky.u.sunSize.value = 0.04; sky.u.sunGlow.value = lerp(0.95, 0.5, dusk); sky.u.starAmt.value = dusk * 0.5;
         scene.fog.color.set('#a85a34').lerp(colA.set('#2a1210'), dusk); scene.fog.density = 0.0035;
         hemi.color.set('#ffa070'); hemi.groundColor.set('#1a0c08'); hemi.intensity = 0.25; sun.intensity = 0.6; sun.color.set('#ff9a60'); sun.position.set(0, 20, -200);
         // имена: подсветка за фигурой точно на слове

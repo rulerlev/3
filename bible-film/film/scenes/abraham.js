@@ -172,6 +172,7 @@ export default function build({ THREE, lib, meta }) {
 
       if (t < C.stars) {
         // общий план лагеря → камера поднимает взгляд к небу
+        abr.rotation.y = -2.4; abr.parts.arms[0].rotation.x = 0;
         const up = ramp(t, 4.4, 2.8);
         cameraPath(camera, [[0, [13, 2.0, 15], [0, 1.6, 0]], [C.stars, [11, 1.8, 12.5], [0, 2.2, -1]]], t);
         const tgt = new THREE.Vector3(0, 2.2, -1); camera.lookAt(lerp(0.5, -4, up), lerp(1.8, 22, up * up), lerp(0, -6, up));

@@ -33,22 +33,22 @@ export default function build({ THREE, lib, W, H, meta }) {
     const geo = new THREE.BoxGeometry(Wd, Hh, 8, 40, 18, 6); const p = geo.attributes.position; const v = new THREE.Vector3();
     for (let i = 0; i < p.count; i++) {
       v.fromBufferAttribute(p, i); const n = lib.fbm(v.x * 0.18 + 5, v.y * 0.22 + v.z * 0.1, 4); const top = clamp((v.y + Hh / 2) / Hh);
-      v.z += n * 0.9; v.x += lib.fbm(v.y * 0.2, v.z * 0.2 + 5, 3) * 1.2; v.y += lib.fbm(v.x * 0.15, v.z * 0.15 + 10, 4) * 2.2 * top * top;
+      const ex = Math.abs(v.x) / (Wd / 2); v.z += n * 0.9 - Math.pow(ex, 3) * 3.2 * (v.z > 0 ? 1 : 0.3); v.x *= 1 - 0.12 * Math.pow(ex, 2) * top; v.x += lib.fbm(v.y * 0.2, v.z * 0.2 + 5, 3) * 1.2; v.y += lib.fbm(v.x * 0.15, v.z * 0.15 + 10, 4) * 2.2 * top * top;
       p.setXYZ(i, v.x, v.y, v.z);
     }
     geo.computeVertexNormals();
     const cols = new Float32Array(p.count * 3); const base = new THREE.Color('#9a8a74'), cc = new THREE.Color();
-    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i); const k = 0.72 + 0.25 * lib.noise2(x * 0.5, y * 0.5 + z * 0.3) + 0.1 * Math.sin(y * 3.1 + lib.noise2(x * 0.2, 0) * 3) - clamp(-y / Hh * 0.6); cc.copy(base).multiplyScalar(k); cols.set([cc.r, cc.g, cc.b], i * 3); }
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i); const k = 0.78 + 0.2 * lib.noise2(x * 0.5, y * 0.5 + z * 0.3) + 0.1 * Math.sin(y * 3.1 + lib.noise2(x * 0.2, 0) * 3) - clamp(-y / Hh) * 0.12; cc.copy(base).multiplyScalar(k); cols.set([cc.r, cc.g, cc.b], i * 3); }
     geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
     const rock = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })); rock.position.set(0, Hh / 2 - 0.4, -4); rock.castShadow = rock.receiveShadow = true; garden.add(rock);
-    const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#3e4430', roughness: 1 })); hill.scale.set(30, 11, 14); hill.position.set(0, 0, -14); garden.add(hill);
+    const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#3e4430', roughness: 1 })); hill.scale.set(30, 11, 13); hill.position.set(0, 0, -17.5); garden.add(hill);
   }
   const doorShape = new THREE.Shape(); doorShape.moveTo(-0.95, 0); doorShape.lineTo(0.95, 0); doorShape.lineTo(0.95, 1.7); doorShape.absarc(0, 1.7, 0.95, 0, Math.PI, false); doorShape.lineTo(-0.95, 0);
   const doorMat = new THREE.MeshBasicMaterial({ color: '#000' });
   const door = new THREE.Mesh(new THREE.ShapeGeometry(doorShape, 16), doorMat); door.position.set(0, 0, 0.75); garden.add(door);
   const frame = new THREE.Mesh(new THREE.ShapeGeometry(doorShape, 16), new THREE.MeshStandardMaterial({ color: '#6a5e50', roughness: 1 })); frame.scale.set(1.35, 1.18, 1); frame.position.set(0, -0.05, 0.7); garden.add(frame);
   const stone = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.45, 28), new THREE.MeshStandardMaterial({ color: '#857664', roughness: 1 })); stone.rotation.set(Math.PI / 2, 0, 0); stone.rotateY(0.25); stone.position.set(3.3, 1.55, 1.25); stone.castShadow = true; garden.add(stone);
-  const groove = new THREE.Mesh(new THREE.BoxGeometry(7, 0.3, 1.2), new THREE.MeshStandardMaterial({ color: '#5e5244', roughness: 1 })); groove.position.set(1.4, -0.08, 1.2); garden.add(groove);
+  const groove = new THREE.Mesh(new THREE.BoxGeometry(7, 0.3, 1.2), new THREE.MeshStandardMaterial({ color: '#3a3228', roughness: 1 })); groove.position.set(1.4, -0.16, 1.2); garden.add(groove);
   [[-12, 5, 1.2], [11, 8, 1.4], [-8, 14, 1.0], [14, 18, 1.1], [-16, 20, 1.3]].forEach(([x, z, s]) => tree(x, z, s, garden, gH));
   [[-14, -1, 8], [13.5, 0, 9], [-17, 3, 7], [17, 5, 7.5]].forEach(([x, z, h]) => { const cy = new THREE.Mesh(new THREE.ConeGeometry(0.9, h, 8), new THREE.MeshStandardMaterial({ color: '#1e2618', roughness: 1 })); cy.position.set(x, gH(x, z) + h / 2, z); cy.castShadow = true; garden.add(cy); });
   { const r = rng(9); const bm = new THREE.MeshStandardMaterial({ color: '#2a3420', roughness: 1 }); for (let i = 0; i < 26; i++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5 + r() * 0.6, 0), bm); const x = (r() - 0.5) * 30, z = 3 + r() * 22; if (Math.abs(x - 1.2) < 2.5) continue; b.position.set(x, gH(x, z) + 0.2, z); b.scale.y = 0.6; garden.add(b); } }
@@ -95,17 +95,17 @@ export default function build({ THREE, lib, W, H, meta }) {
         garden.visible = true; hills.visible = false;
         const dawn = ramp(t, T1 - 0.6, 4.2); // восход
         const light = ramp(t, T1 - 1.0, 1.4);  // свет из гробницы
-        const top = new THREE.Color('#0a1430').lerp(new THREE.Color('#3a5a8a'), dawn);
-        const hor = new THREE.Color('#5a6e94').lerp(new THREE.Color('#ffb070'), dawn);
+        const top = new THREE.Color('#0a1430').lerp(new THREE.Color('#2e5088'), dawn);
+        const hor = new THREE.Color('#5a6e94').lerp(new THREE.Color('#ffa058'), dawn);
         setSky('#000', '#000', '#000', [0.8, lerp(-0.04, 0.12, dawn), 0.6], '#ffe2b0', 0.03, dawn * 1.0, (1 - dawn) * 0.5);
         sky.u.top.value.copy(top); sky.u.horizon.value.copy(hor); sky.u.bottom.value.copy(hor).multiplyScalar(0.35);
-        scene.fog.color.copy(new THREE.Color('#34486e').lerp(new THREE.Color('#b88a68'), dawn)); scene.fog.density = lerp(0.014, 0.011, dawn);
+        scene.fog.color.copy(new THREE.Color('#34486e').lerp(new THREE.Color('#b88a68'), dawn)); scene.fog.density = lerp(0.014, 0.0065, dawn);
         stars.u.opacity.value = 1 - dawn;
         hemi.color.set('#7a90c0').lerp(tmpC.set('#e0c0a0'), dawn); hemi.groundColor.set('#1a1a22').lerp(tmpC.set('#4a3a28'), dawn); hemi.intensity = lerp(1.1, 0.8, dawn);
-        sun.color.set('#ffc080'); sun.intensity = dawn * 3.2; sun.position.set(80, lerp(-6, 12, dawn), 22); sun.target.position.set(0, 0, 0); sun.castShadow = dawn > 0.01;
+        sun.color.set('#ffc080'); sun.intensity = dawn * 4.0; sun.position.set(80, lerp(-6, 12, dawn), 22); sun.target.position.set(0, 0, 0); sun.castShadow = dawn > 0.01;
         doorMat.color.set('#000').lerp(tmpC.set('#f0b070'), light * 0.85);
-        tombGlow.material.opacity = light * 0.45; tombGlow.scale.setScalar(5 + light * 4 + Math.sin(t * 2) * 0.2);
-        beams.forEach((b, i) => (b.u.opacity.value = light * 0.34 * b.userData.w * (0.85 + 0.15 * Math.sin(t * 1.3 + i * 1.7))));
+        tombGlow.material.opacity = light * 0.5; tombGlow.scale.setScalar(5 + light * 6 + Math.sin(t * 2) * 0.2);
+        beams.forEach((b, i) => (b.u.opacity.value = light * 0.55 * b.userData.w * (0.85 + 0.15 * Math.sin(t * 1.3 + i * 1.7))));
         tombL.intensity = light * 30; beamDust.u.opacity.value = light * 0.55;
         lamps.forEach((L, i) => (L.intensity = 3.5 * (1 + Math.sin(t * 10 + i * 3) * 0.08) * (1 - dawn * 0.5)));
         // женщины идут к гробнице, потом останавливаются; одна закрывает глаза рукой

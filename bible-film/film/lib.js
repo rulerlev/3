@@ -179,7 +179,7 @@ export function fire({ count = 600, seed = 11, radius = 0.6, height = 3, size = 
 
 /** Дождь: отрезки, падающие в объёме box вокруг center */
 export function rain({ count = 6000, box = [80, 40, 80], center = [0, 15, 0], seed = 5, speed = 28, color = '#9fb4c8', opacity = 0.35, slant = 0.25 } = {}) {
-  const r = rng(seed), p = new Float32Array(count * 6), sd = new Float32Array(count * 2);
+  const r = rng(seed), p = new Float32Array(count * 6), sd = new Float32Array(count * 4);
   for (let i = 0; i < count; i++) {
     const x = (r() - .5) * box[0], y = (r() - .5) * box[1], z = (r() - .5) * box[2], s = r();
     p.set([x, y, z, x, y, z], i * 6); sd.set([s, 0, s, 1], i * 4);

@@ -205,6 +205,9 @@ export default function build({ THREE, lib, meta }) {
   return {
     scene, camera,
     update(t, S) {
+      // базовое состояние неба/света (кадры рендерятся в любом порядке — ничего не наследуем от другого плана)
+      sky.u.sunDir.value.set(0, -1, 0); sky.u.sunSize.value = 0.02; sky.u.sunGlow.value = 0; sky.u.starAmt.value = 0; sky.u.sunColor.value.set('#ffd9a0');
+      hemi.groundColor.set('#1a120c'); bolt.intensity = 0; sun.intensity = 0;
       const shotA = t < T_TAB, shotC = t >= C.desert, shotB = !shotA && !shotC;
       gA.visible = shotA; gB.visible = shotB; gC.visible = shotC;
       S.post.bloomThreshold = 0.75;
