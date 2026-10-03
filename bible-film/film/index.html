@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Библия за 10 минут</title>
+<style>
+  @font-face { font-family: 'Garamond'; src: url('../fonts/EBGaramond12-Regular.ttf'); }
+  @font-face { font-family: 'Garamond'; font-style: italic; src: url('../fonts/EBGaramond12-Italic.ttf'); }
+  @font-face { font-family: 'GaramondSC'; src: url('../fonts/EBGaramondSC12-Regular.ttf'); }
+  @font-face { font-family: 'PTSans'; src: url('../fonts/PTS55F.ttf'); }
+  @font-face { font-family: 'PTSans'; font-weight: bold; src: url('../fonts/PTS75F.ttf'); }
+  @font-face { font-family: 'PTMono'; src: url('../fonts/PTM55F.ttf'); }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  canvas { display: block; }
+  #out { position: absolute; left: 0; top: 0; }
+  #gl { position: absolute; left: 0; top: 0; visibility: hidden; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "../node_modules/three/build/three.module.js",
+  "three/addons/": "../node_modules/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<canvas id="out"></canvas>
+<script type="module" src="main.js"></script>
+</body>
+</html>
