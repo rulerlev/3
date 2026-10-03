@@ -161,6 +161,7 @@ export default function build({ THREE, lib, meta }) {
   // позиции отца и сына на дороге (общие для кадров run/embrace)
   const sonZ = (t) => t < C.embrace ? lerp(ZS0, ZM - 0.4, clamp((t - C.run) / (C.embrace - C.run))) : ZM - 0.22;
   const fatherZ = (t) => { if (t < T_RUN) return ZH; if (t >= C.embrace) return ZM + 0.22; const k = clamp((t - T_RUN) / (C.embrace - T_RUN)); return lerp(ZH, ZM + 0.4, Math.pow(k, 1.35)); };
+  const reset = (f) => { f.parts.arms[0].rotation.set(0, 0, -0.12); f.parts.arms[1].rotation.set(0, 0, 0.12); f.parts.body.rotation.set(0, 0, 0); f.parts.body.position.y = 0; f.parts.head.position.z = 0; };
   const groups = [gA, gF, gC, gP];
   const show = (g) => groups.forEach((x) => (x.visible = x === g));
 
@@ -168,7 +169,7 @@ export default function build({ THREE, lib, meta }) {
     scene, camera,
     update(t, S) {
       const P = S.post; P.bloom = 0.55; P.bloomThreshold = 0.8; P.exposure = 1.0;
-      sky.visible = true;
+      sky.visible = true; [father, son, sonPig].forEach(reset);
       if (t < C.far) { // ---- склон
         show(gA);
         setSky('#3a5a88', '#f8b070', '#5a4030', [-0.55, 0.075, -1], '#ffd8a0', 0.03, 0.9);

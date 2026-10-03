@@ -305,8 +305,8 @@ export default function build({ THREE, lib, meta }) {
         const sy = waveY(0, 0, t, 1.6); const pitch = (waveY(3, 0, t, 1.6) - waveY(-3, 0, t, 1.6)) / 6, roll = (waveY(0, 1.5, t, 1.6) - waveY(0, -1.5, t, 1.6)) / 3;
         ship.position.set(0, sy - 0.2, 0); ship.rotation.set(-roll * 0.8, 0.25, pitch * 0.9);
         // Иону бросают за борт
-        const k = clamp((t - T_THROW) / 0.75);
-        if (t < T_THROW) { tmpP.set(0.6, 1.3, 0.9); ship.localToWorld(tmpP); jonahS.position.copy(tmpP); jonahS.rotation.set(0, 0.6, 0); jonahS.parts.arms[0].rotation.set(-0.3, 0, -0.3); }
+        const k = clamp((t - T_THROW) / 0.75); ship.updateMatrixWorld(true);
+        if (t < T_THROW) { tmpP.set(0.6, 1.3, 0.9); ship.localToWorld(tmpP); jonahS.position.copy(tmpP); jonahS.rotation.set(0, 0.6, 0); jonahS.parts.arms[0].rotation.set(-0.3, 0, -0.3); jonahS.parts.arms[1].rotation.set(0, 0, 0.12); }
         else { const a = new THREE.Vector3(0.6, 1.3, 0.9); ship.localToWorld(a); jonahS.position.set(a.x + k * 2.4, a.y + Math.sin(k * Math.PI) * 1.8 - easeIn(k) * 3.2, a.z + k * 3.2); jonahS.rotation.set(k * 1.8, 0.6, k * 0.8); jonahS.parts.arms[0].rotation.set(0, 0, -2.4 * k); jonahS.parts.arms[1].rotation.set(0, 0, 2.4 * k); }
         jonahS.visible = t < T_THROW + 0.9;
         const sk = clamp((t - T_THROW - 0.7) / 1.3); splash.forEach((sp, i) => { const a = i / 8 * Math.PI * 2; sp.position.set(0.6 + 2.4 + Math.cos(a) * sk * 1.2, waveY(3, 4, t, 1.6) + 0.4 + sk * 1.6 * (0.5 + (i % 3) * 0.3), 0.9 + 3.2 + Math.sin(a) * sk * 1.2); const s = 1 + sk * 2.5; sp.scale.set(s, s, 1); sp.material.opacity = t > T_THROW + 0.7 ? (1 - sk) * 0.7 : 0; });
