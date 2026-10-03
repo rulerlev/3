@@ -32,14 +32,14 @@ export default function build({ THREE, lib, meta }) {
       return col('#6a6036').lerp(col('#8a7a4e'), n * 0.6).lerp(col('#6e5e50'), clamp(sl * 2.2)).lerp(col('#4a3e36'), clamp((-y - 20) / 80)).multiplyScalar(0.85 + n * 0.25); } });
   scene.add(land);
   const sea = lib.ocean({ size: 2600, seg: 110, deep: '#0a1a28', shallow: '#244050', sky: '#e09060', amp: 0.4, choppy: 0.8, sunDir: SUN.toArray(), sunColor: '#ffc080' });
-  sea.position.set(0, -146, -1000); scene.add(sea);
-  const sky = lib.skyDome({ top: '#2a4470', horizon: '#f0a060', bottom: '#3a2418', sunDir: SUN.toArray(), sunColor: '#ffc880', sunSize: 0.03, sunGlow: 1.0, radius: 1800 });
+  sea.position.set(0, -146, -1000);
+  const sky = lib.skyDome({ top: '#2a4470', horizon: '#f0a060', bottom: '#3a2418', sunDir: SUN.toArray(), sunColor: '#ffc880', sunSize: 0.022, sunGlow: 1.0, radius: 1800 });
   scene.add(sky);
   const stars = lib.starfield({ count: 3000, radius: 1700, size: 2.2, minY: 0.05, seed: 9 }); stars.u.opacity.value = 0; scene.add(stars);
   const sun = new THREE.DirectionalLight('#ffc890', 2.6); scene.add(sun, sun.target);
-  sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 300 }); sun.shadow.bias = -0.0008;
+  sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 300 }); sun.shadow.bias = -0.0008;
   const hemi = new THREE.HemisphereLight('#8aa0c8', '#4a3424', 0.7); scene.add(hemi);
-  const clouds = lib.cloudLayer({ count: 22, area: [1400, 900], y: 220, scale: [260, 90], seed: 5, color: '#ffd0b0', opacity: 0.45, center: [0, -600] }); scene.add(clouds);
+  const clouds = lib.cloudLayer({ count: 9, area: [1400, 700], y: 240, scale: [300, 80], seed: 5, color: '#ffd0b0', opacity: 0.4, center: [0, -650] });
 
   // =====================================================================
   // КАРМИЛ: толпы, жертвенники
@@ -51,11 +51,11 @@ export default function build({ THREE, lib, meta }) {
   function crowd({ count, seed, place, palette, arms = false, skin = '#6a4630' }) {
     const r = rng(seed); const grp = new THREE.Group();
     const prof = [[0, 0], [0.36, 0], [0.31, 0.4], [0.24, 1.0], [0.26, 1.32], [0.19, 1.42], [0.08, 1.48], [0, 1.48]].map(([x, y]) => new THREE.Vector2(x, y));
-    const body = new THREE.InstancedMesh(new THREE.LatheGeometry(prof, 7), new THREE.MeshStandardMaterial({ roughness: 0.95 }), count);
-    const head = new THREE.InstancedMesh(new THREE.SphereGeometry(0.15, 7, 5), new THREE.MeshStandardMaterial({ roughness: 0.9 }), count);
-    body.frustumCulled = head.frustumCulled = false; body.castShadow = true; grp.add(body, head);
+    const body = new THREE.InstancedMesh(new THREE.LatheGeometry(prof, 6), new THREE.MeshStandardMaterial({ roughness: 0.95 }), count);
+    const head = new THREE.InstancedMesh(new THREE.SphereGeometry(0.15, 6, 4), new THREE.MeshStandardMaterial({ roughness: 0.9 }), count);
+    body.frustumCulled = head.frustumCulled = false; grp.add(body, head);
     let armM = null;
-    if (arms) { const ag = new THREE.CylinderGeometry(0.05, 0.075, 0.66, 5); ag.translate(0, -0.33, 0); armM = new THREE.InstancedMesh(ag, body.material, count * 2); armM.frustumCulled = false; grp.add(armM); }
+    if (arms) { const ag = new THREE.CylinderGeometry(0.05, 0.075, 0.66, 4); ag.translate(0, -0.33, 0); armM = new THREE.InstancedMesh(ag, body.material, count * 2); armM.frustumCulled = false; grp.add(armM); }
     const data = []; const c = new THREE.Color();
     for (let i = 0; i < count; i++) {
       const p = place(i, r); p.ph = r() * 20; p.s = p.s || (0.9 + r() * 0.2); p.u = r(); p.v = r(); data.push(p);
@@ -93,7 +93,7 @@ export default function build({ THREE, lib, meta }) {
       const s = new THREE.Mesh(stoneG, stoneMat); s.position.set((i - 1) * 0.6 + (r() - 0.5) * 0.06, 0.26 + l * 0.5, (j - 1) * 0.6 + (r() - 0.5) * 0.06); s.rotation.set((r() - 0.5) * 0.12, (r() - 0.5) * 0.3, (r() - 0.5) * 0.12); s.scale.setScalar(0.92 + r() * 0.16); s.castShadow = true; stones.add(s); }
     const wood = new THREE.Group(); g.add(wood); const wm = new THREE.MeshStandardMaterial({ color: '#4a3020', roughness: 1 });
     for (let l = 0; l < 3; l++) for (let i = 0; i < 4; i++) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 2.0, 6), wm); w.rotation.z = Math.PI / 2; if (l % 2) w.rotation.y = Math.PI / 2; const o = (i - 1.5) * 0.4; if (l % 2) w.position.set(o, 1.58 + l * 0.13, 0); else w.position.set(0, 1.58 + l * 0.13, o); wood.add(w); }
-    const off = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), new THREE.MeshStandardMaterial({ color: '#5a2418', roughness: 0.8 })); off.scale.set(1.3, 0.5, 0.6); off.position.y = 2.15; wood.add(off);
+    
     gC.add(g); return { g, stones, wood };
   }
   const stoneMB = new THREE.MeshStandardMaterial({ color: '#7a6a58', roughness: 0.95 });
@@ -140,15 +140,16 @@ export default function build({ THREE, lib, meta }) {
           gl_FragColor = vec4(c*edge*(.45 + .9*n)*top*bot*opacity, 1.); }` });
     const mesh = new THREE.Mesh(geo, m); mesh.frustumCulled = false; return Object.assign(mesh, { u });
   }
-  const column = fireColumn(5.5, 2.4, 260, '#ffd890', '#ff6a18'); column.position.set(AE.x, AE.y + 260, AE.z); gC.add(column);
-  const core = fireColumn(1.8, 1.0, 260, '#fff4d8', '#ffb050'); core.position.copy(column.position); gC.add(core);
+  const column = fireColumn(6.5, 2.6, 120, '#ffd080', '#ff5a10'); column.position.set(AE.x, AE.y + 120, AE.z); gC.add(column);
+  const core = fireColumn(2.2, 1.1, 120, '#fff0c8', '#ffa040');
+  const heaven = lib.glow('#ffd8a0', 70, 0); heaven.position.set(AE.x, 34, AE.z - 6); gC.add(heaven); core.position.copy(column.position); gC.add(core);
   const shockU = { r: { value: 0 }, op: { value: 0 } };
   const shock = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ uniforms: shockU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv*2.-1.; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader: 'uniform float r, op; varying vec2 vUv; void main(){ float d = length(vUv); float ring = exp(-pow((d - .9)*14., 2.)) + .25*exp(-pow((d-.75)*6.,2.)); gl_FragColor = vec4(vec3(1.,.6,.25)*ring*op, 1.); }' }));
   shock.rotation.x = -Math.PI / 2; shock.position.set(AE.x, AE.y + 0.3, AE.z); gC.add(shock);
-  const flameE = lib.fire({ count: 900, radius: 1.1, height: 5.5, size: 70, seed: 31, intensity: 0 }); flameE.position.set(AE.x, AE.y + 1.6, AE.z); gC.add(flameE);
-  const flameCore = lib.fire({ count: 300, radius: 0.6, height: 3, size: 60, seed: 32, color1: '#fff2c8', color2: '#ff9030', intensity: 0 }); flameCore.position.copy(flameE.position); gC.add(flameCore);
+  const flameE = lib.fire({ count: 900, radius: 1.1, height: 5.5, size: 130, seed: 31, intensity: 0 }); flameE.position.set(AE.x, AE.y + 1.6, AE.z); gC.add(flameE);
+  const flameCore = lib.fire({ count: 300, radius: 0.6, height: 3, size: 110, seed: 32, color1: '#fff2c8', color2: '#ff9030', intensity: 0 }); flameCore.position.copy(flameE.position); gC.add(flameCore);
   const impactGlow = lib.glow('#ffc070', 30, 0); impactGlow.position.set(AE.x, AE.y + 3, AE.z); gC.add(impactGlow);
   const altarGlow = lib.glow('#ff8030', 12, 0); altarGlow.position.set(AE.x, AE.y + 2.4, AE.z); gC.add(altarGlow);
   const fireL = new THREE.PointLight('#ff9040', 0, 90, 1.3); fireL.position.set(AE.x, AE.y + 4, AE.z); gC.add(fireL);
@@ -176,8 +177,8 @@ export default function build({ THREE, lib, meta }) {
   const WC = V(70, 0, 30); WC.y = hC(WC.x, WC.z); // ось вихря
   // путь колесницы (τ — сек от начала кадра). То же в GLSL.
   const CH_T0 = C.chariot;
-  const chPath = (tau, out = V(0, 0, 0)) => { const a = 0.5 * tau - 2.2; const R = 16 - tau * 1.1; return out.set(WC.x + Math.cos(a) * R, WC.y + 4 + tau * 1.6 + tau * tau * 0.75, WC.z + Math.sin(a) * R); };
-  const CH_GLSL = `vec3 chPath(float tau){ float a = .5*tau - 2.2; float R = 16. - tau*1.1; return vec3(${WC.x.toFixed(3)} + cos(a)*R, ${(WC.y + 4).toFixed(3)} + tau*1.6 + tau*tau*.75, ${WC.z.toFixed(3)} + sin(a)*R); }`;
+  const chPath = (tau, out = V(0, 0, 0)) => { const a = 0.45 * tau + 1.0; const R = 22 - tau * 1.6; return out.set(WC.x + Math.cos(a) * R, WC.y + 4 + tau * 1.6 + tau * tau * 0.75, WC.z + Math.sin(a) * R); };
+  const CH_GLSL = `vec3 chPath(float tau){ float a = .45*tau + 1.; float R = 22. - tau*1.6; return vec3(${WC.x.toFixed(3)} + cos(a)*R, ${(WC.y + 4).toFixed(3)} + tau*1.6 + tau*tau*.75, ${WC.z.toFixed(3)} + sin(a)*R); }`;
   // огненная «кожа»
   const fireSkinU = { time: { value: 0 }, k: { value: 1 } };
   const fireSkin = new THREE.ShaderMaterial({ uniforms: fireSkinU,
@@ -205,8 +206,8 @@ export default function build({ THREE, lib, meta }) {
   const wheels = [-1, 1].map((s) => { const w = new THREE.Group(); w.add(new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.06, 6, 20), fireSkin)); for (let i = 0; i < 6; i++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.2, 0.04), fireSkin); sp.rotation.z = i / 6 * Math.PI; w.add(sp); } w.rotation.y = Math.PI / 2; w.position.set(s * 0.95, 0.65, -0.3); chariot.add(w); return w; });
   const prophet = lib.figure({ height: 1.8, robe: '#5a4636', skin: '#7a5034', hood: true, hoodColor: '#3a2a20', seed: 91 }); prophet.position.set(0, 0.65, -0.35); chariot.add(prophet);
   prophet.parts.arms.forEach((a) => (a.rotation.x = -0.9));
-  const chFire = lib.fire({ count: 420, radius: 1.0, height: 3.0, size: 60, seed: 77, intensity: 1.0 }); chFire.position.set(0, 0.6, -0.3); chariot.add(chFire);
-  const chGlow = lib.glow('#ff9040', 22, 0.55); chGlow.position.set(0, 1.6, 1); chariot.add(chGlow);
+  const chFire = lib.fire({ count: 300, radius: 0.9, height: 2.6, size: 45, seed: 77, intensity: 0.8 }); chFire.position.set(0, 0.6, -0.3); chariot.add(chFire);
+  const chGlow = lib.glow('#ff9040', 9, 0.3); chGlow.position.set(0, 1.6, 1); chariot.add(chGlow);
   const chLight = new THREE.PointLight('#ff8a3a', 400, 160, 1.2); chLight.position.set(0, 2, 0.5); chariot.add(chLight);
   // огненный шлейф (те же формулы пути в шейдере)
   const NT = 1500; const tP = new Float32Array(NT * 3), tS = new Float32Array(NT * 2); { const r = rng(41); for (let i = 0; i < NT; i++) { tP.set([r() - 0.5, r() - 0.5, r() - 0.5], i * 3); tS.set([r(), r()], i * 2); } }
@@ -219,35 +220,37 @@ export default function build({ THREE, lib, meta }) {
         vA = step(0., te)*(1. - vL); vec4 mv = modelViewMatrix*vec4(p,1.); gl_Position = projectionMatrix*mv; gl_PointSize = pxr*(4. + 8.*sd.y)*(40./max(-mv.z,1.)); }`,
     fragmentShader: `varying float vA; varying float vL; void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5,0.,d); vec3 c = mix(vec3(1.,.8,.4), vec3(.9,.25,.05), vL); gl_FragColor = vec4(c*a*a*vA*.9, 1.); }` }));
   trail.frustumCulled = false; gW.add(trail);
-  // вихрь: пылевая воронка, подсвеченная огнём
-  const NV = 2600; const vP = new Float32Array(NV * 3); { const r = rng(51); for (let i = 0; i < NV; i++) vP.set([r(), r() * 6.283, r()], i * 3); }
-  const vG = new THREE.BufferGeometry(); vG.setAttribute('position', new THREE.BufferAttribute(vP, 3));
-  const vortU = { time: { value: 0 }, T0: { value: CH_T0 }, chPos: { value: V(0, 0, 0) }, center: { value: WC.clone() }, op: { value: 0 }, pxr: { value: 1 } };
-  const vortex = new THREE.Points(vG, new THREE.ShaderMaterial({ uniforms: vortU, transparent: true, depthWrite: false,
-    vertexShader: `uniform float time, op, pxr; uniform vec3 chPos, center; varying float vA; varying float vF;
-      void main(){ float h = position.x; float y = h*95.; float R = mix(5., 34., pow(h, 1.25)) * (.8 + .4*position.z);
-        float a = position.y + time*(1.5 - h*.9) + sin(time*.7 + position.z*20.)*.2;
-        vec3 p = center + vec3(cos(a)*R, y + sin(time + position.z*9.)*1.5, sin(a)*R);
-        float d = length(p - chPos); vF = exp(-d*d/700.);
-        vA = op*smoothstep(0., .08, h)*(1. - smoothstep(.85, 1., h));
-        vec4 mv = modelViewMatrix*vec4(p,1.); gl_Position = projectionMatrix*mv; gl_PointSize = pxr*(14. + 22.*position.z)*(60./max(-mv.z,1.)); }`,
-    fragmentShader: `varying float vA; varying float vF; void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5,0.,d);
-        vec3 c = mix(vec3(.24,.2,.24), vec3(1.,.5,.2), vF); gl_FragColor = vec4(c, a*a*vA*(.16 + vF*.25)); }` }));
-  vortex.frustumCulled = false; gW.add(vortex);
+  // вихрь: воронка из полупрозрачных оболочек с полосами, подсвеченная огнём
+  const vortU = { time: { value: 0 }, chPos: { value: V(0, 0, 0) }, op: { value: 0 } };
+  const vortMat = new THREE.ShaderMaterial({ uniforms: vortU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    vertexShader: 'varying vec3 vW; varying vec2 vUv; varying vec3 vN; void main(){ vUv = uv; vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; vN = normalize(mat3(modelMatrix)*normal); gl_Position = projectionMatrix*viewMatrix*w; }',
+    fragmentShader: lib.GLSL_NOISE + `uniform float time, op; uniform vec3 chPos; varying vec3 vW; varying vec2 vUv; varying vec3 vN;
+      void main(){ float ang = vUv.x*6.2832; float y = vUv.y;
+        float sw = ang*2. + y*7. - time*(1.6 - y*.6);
+        float n = vnoise(vec2(sw*1.6, y*5. - time*.4)) * .6 + vnoise(vec2(sw*4., y*14.)) * .4;
+        float streak = smoothstep(.35, .85, n);
+        vec3 v = normalize(cameraPosition - vW); float edge = 1. - abs(dot(normalize(vN), v)); edge = .25 + .75*edge*edge;
+        float d = length(vW - chPos); float f = exp(-d*d/900.);
+        vec3 c = mix(vec3(.16,.13,.17), vec3(1.,.48,.18)*1.4, f) + vec3(.35,.2,.2)*smoothstep(.75,1.,n)*.4;
+        float a = op*streak*edge*smoothstep(0., .06, y)*(1. - smoothstep(.8, 1., y))*(.4 + .5*f);
+        gl_FragColor = vec4(c, a); }` });
+  const vortex = new THREE.Group(); gW.add(vortex);
+  [[20, 46, 0], [14, 38, 1]].forEach(([rb, rt, k]) => { const g = new THREE.CylinderGeometry(rt, rb, 100, 40, 12, true); g.translate(0, 50, 0); const m = new THREE.Mesh(g, vortMat); m.position.copy(WC); m.rotation.y = k * 2; m.frustumCulled = false; m.renderOrder = 2 + k; vortex.add(m); });
+  const dustW = lib.motes({ count: 600, box: [70, 60, 70], center: [WC.x, WC.y + 30, WC.z], size: 4, color: '#ffb070', speed: 0.5, kind: 'rise', opacity: 0.0, seed: 52 }); gW.add(dustW);
   // плащ
   const cloakG = new THREE.PlaneGeometry(1.3, 1.5, 8, 8); const cloakBase = cloakG.attributes.position.array.slice();
   const cloak = new THREE.Mesh(cloakG, new THREE.MeshStandardMaterial({ color: '#4a3a2a', roughness: 1, side: THREE.DoubleSide })); gW.add(cloak);
   // Елисей
   const elisha = lib.figure({ height: 1.75, robe: '#5a4a3a', skin: '#7a5034', hood: true, seed: 92 });
-  const EP = V(WC.x - 6, 0, WC.z + 12); EP.y = hC(EP.x, EP.z); elisha.position.copy(EP); gW.add(elisha); elisha.parts.arms.forEach((a) => (a.rotation.order = 'YXZ'));
+  const EP = V(WC.x - 8, 0, WC.z + 26); EP.y = hC(EP.x, EP.z); elisha.position.copy(EP); gW.add(elisha); elisha.parts.arms.forEach((a) => (a.rotation.order = 'YXZ'));
 
   // ---------- образы ----------
-  const L0 = { top: '#2c4a78', hor: '#f0aa6a', bot: '#3a2a20', fog: '#c89070', fogD: 0.0022, sunY: 0.12, glow: 1.0, sun: 2.6, hemi: 0.75, exp: 0.95, stars: 0, cl: '#ffd8b8' };
-  const L1 = { ...L0, hor: '#f08a4a', fog: '#b87050', sunY: 0.055, glow: 1.1, sun: 2.2, exp: 0.92, cl: '#ffb890' };
-  const L2 = { top: '#1e2a50', hor: '#d0603a', bot: '#2a1810', fog: '#7a4a40', fogD: 0.0024, sunY: 0.0, glow: 0.9, sun: 1.2, hemi: 0.5, exp: 0.9, stars: 0, cl: '#e88a70' };
+  const L0 = { top: '#2c4a78', hor: '#e8a066', bot: '#3a2a20', fog: '#b88466', fogD: 0.0022, sunY: 0.1, glow: 0.55, sun: 2.6, hemi: 0.75, exp: 0.86, stars: 0, cl: '#ffd8b8' };
+  const L1 = { ...L0, hor: '#e88448', fog: '#a86a4c', sunY: 0.05, glow: 0.7, sun: 2.2, exp: 0.88, cl: '#ffb890' };
+  const L2 = { top: '#1e2a50', hor: '#c85a38', bot: '#2a1810', fog: '#7a4a40', fogD: 0.0024, sunY: 0.012, glow: 0.8, sun: 1.6, hemi: 0.5, exp: 0.9, stars: 0, cl: '#e88a70' };
   const L3 = { top: '#0e1430', hor: '#7a3a34', bot: '#120a08', fog: '#3a2428', fogD: 0.0026, sunY: -0.05, glow: 0.35, sun: 0.25, hemi: 0.32, exp: 0.95, stars: 0.4, cl: '#8a5a5a' };
   const L4 = { top: '#0a0e24', hor: '#4a2a3a', bot: '#0a0606', fog: '#2a1c24', fogD: 0.0018, sunY: -0.08, glow: 0.2, sun: 0.1, hemi: 0.25, exp: 0.95, stars: 0.8, cl: '#6a4a5a' };
-  const looks = [[0, L0], [C.altars - 0.01, L0], [C.altars, L1], [15.9, L2], [C.fire - 0.01, L2], [C.fire, L3], [C.chariot - 0.01, L3], [C.chariot, L4], [meta.dur, L4]];
+  const looks = [[0, L0], [C.altars - 0.01, L0], [C.altars, L1], [15.9, L2], [C.fire, L2], [TF, L3], [C.chariot - 0.01, L3], [C.chariot, L4], [meta.dur, L4]];
   const tmp = V(0, 0, 0), tmp2 = V(0, 0, 0);
 
   return {
@@ -285,7 +288,7 @@ export default function build({ THREE, lib, meta }) {
         // --- Илия
         elijah.rotation.set(0, 0, 0); elijah.parts.arms.forEach((a, s) => { a.rotation.set(0, 0, (s ? 1 : -1) * 0.12); });
         jar.visible = false; strU.on.value = 0;
-        if (!wAlt) { elijah.position.set(6, hC(6, -1), -1); elijah.rotation.y = -Math.PI / 2 - 0.2; }
+        if (!wAlt) { elijah.position.set(5, hC(5, 0), 0); elijah.rotation.y = -Math.PI / 2 - 0.25; elijah.parts.arms[0].rotation.z = -0.5; }
         else {
           elijah.position.set(AE.x - 1.7, hC(AE.x - 1.7, AE.z + 1.1), AE.z + 1.1); elijah.rotation.y = 2.1;
           const pour = ramp(t, 15.8, 0.6) * (1 - ramp(t, 19.8, 0.5));
@@ -307,14 +310,15 @@ export default function build({ THREE, lib, meta }) {
         const lvl = ramp(t, 16.6, 3.2) * (1 - ramp(t, TF + 0.3, 7.0));
         waterU.level.value = lvl; waterU.sky.value.copy(Lk.hor); waterU.sunDir.value.copy(SUN);
         // --- огонь с неба
-        const desc = ramp(t, TF - 0.55, 0.55), colK = desc * (1 - ramp(t, TF + 0.7, 1.8));
-        column.scale.y = core.scale.y = Math.max(0.001, easeIn(desc) * 0.999 + 0.001); column.visible = core.visible = colK > 0.001;
-        column.u.opacity.value = 1.2 * colK; core.u.opacity.value = 1.6 * colK; column.scale.x = column.scale.z = 1 + 0.5 * ramp(t, TF, 0.3) * (1 - ramp(t, TF + 0.6, 1));
+        const desc = clamp((t - C.fire - 0.05) / (TF - C.fire - 0.05)), colK = (desc > 0 ? 1 : 0) * (1 - ramp(t, TF + 0.6, 1.8));
+        column.scale.y = core.scale.y = Math.max(0.001, 1 - Math.pow(1 - desc, 2.2)); column.visible = core.visible = colK > 0.001;
+        column.u.opacity.value = 1.5 * colK; core.u.opacity.value = 1.8 * colK;
+        heaven.material.opacity = ramp(t, C.fire - 0.4, 0.8) * (1 - ramp(t, TF + 0.4, 2.5)) * 0.7; column.scale.x = column.scale.z = 1 + 0.5 * ramp(t, TF, 0.3) * (1 - ramp(t, TF + 0.6, 1));
         const imp = ramp(t, TF - 0.05, 0.1) * (1 - ramp(t, TF + 0.15, 1.6));
-        impactGlow.material.opacity = imp * 0.9; impactGlow.scale.setScalar(30 + 40 * ramp(t, TF, 0.6));
-        S.post.flash = ramp(t, TF - 0.04, 0.06) * (1 - ramp(t, TF + 0.05, 0.6)) * 0.55;
+        impactGlow.material.opacity = imp * 0.55; impactGlow.scale.setScalar(20 + 25 * ramp(t, TF, 0.6));
+        S.post.flash = ramp(t, TF - 0.04, 0.06) * (1 - ramp(t, TF + 0.05, 0.5)) * 0.32;
         const sw = clamp((t - TF) / 1.6); shockU.r.value = sw; shock.scale.setScalar(2 + easeOut(sw) * 70); shockU.op.value = (t > TF ? 1 : 0) * (1 - sw) * 1.4; shock.visible = t > TF && sw < 1;
-        const burn = ramp(t, TF - 0.05, 0.25); const settle = lerp(1.5, 0.85, ramp(t, TF + 1.0, 3)) * (1 - 0.35 * ramp(t, 27.5, 3));
+        const burn = ramp(t, TF - 0.05, 0.25); const settle = lerp(1.3, 0.75, ramp(t, TF + 1.0, 3)) * (1 - 0.35 * ramp(t, 27.5, 3));
         flameE.u.intensity.value = burn * settle; flameCore.u.intensity.value = burn * settle * 0.8; flameE.visible = flameCore.visible = burn > 0.001;
         flameE.u.height.value = lerp(9, 5.5, ramp(t, TF + 0.4, 2.5));
         altarGlow.material.opacity = burn * 0.55 * (0.9 + 0.1 * Math.sin(t * 9));
@@ -331,21 +335,21 @@ export default function build({ THREE, lib, meta }) {
         if (t < 3.9) {
           // общий план: с моря на гору
           S.quote.y = 0.5;
-          cameraPath(camera, [[0, [-70, 26, -150], [0, 2, -2]], [3.9, [-54, 20, -128], [0, 1, -2]]], t);
+          cameraPath(camera, [[0, [46, 30, 92], [-6, -6, -40]], [3.9, [36, 23, 76], [-6, -5, -40]]], t);
         } else if (t < C.altars) {
           // жрецы (слева) против одного (справа), за ними закат над морем
-          cameraPath(camera, [[3.9, [-3.0, 1.6, 9.5], [-4.5, 3.4, -40]], [C.altars, [-2.0, 1.75, 7.0], [-4.0, 3.4, -40]]], t);
+          cameraPath(camera, [[3.9, [1.2, 1.5, 12.5], [-1.5, 3.2, -40]], [C.altars, [0.8, 1.6, 10.0], [-1.0, 3.2, -40]]], t);
         } else if (t < 15.9) {
           // пляска жрецов вокруг жертвенника, солнце садится
-          cameraPath(camera, [[C.altars, [AB.x + 9, 2.1, AB.z + 9.5], [AB.x - 1, 1.8, AB.z - 4]], [15.9, [AB.x + 6.5, 1.8, AB.z + 10.5], [AB.x - 1.5, 1.9, AB.z - 4]]], t);
+          cameraPath(camera, [[C.altars, [AB.x + 15, 3.2, AB.z + 15], [AB.x - 1, 1.6, AB.z - 6]], [15.9, [AB.x + 12, 2.8, AB.z + 16], [AB.x - 2, 1.8, AB.z - 6]]], t);
         } else if (t < C.fire) {
           // Илия заливает жертвенник водой — вода блестит во рву
-          cameraPath(camera, [[15.9, [AE.x + 3.6, 2.4, AE.z + 4.6], [AE.x - 0.4, 1.5, AE.z]], [C.fire, [AE.x + 2.8, 2.2, AE.z + 4.0], [AE.x - 0.3, 1.6, AE.z]]], t);
+          cameraPath(camera, [[15.9, [AE.x + 3.2, 2.9, AE.z - 5.6], [AE.x - 0.8, 1.2, AE.z + 1.2]], [C.fire, [AE.x + 2.6, 2.6, AE.z - 4.8], [AE.x - 0.7, 1.3, AE.z + 1.2]]], t);
         } else {
           // огонь с неба: общий план из-за толпы, потом медленный отъезд
           S.quote.y = 0.3;
           const shake = Math.max(0, 1 - (t - TF) / 1.2) * (t > TF ? 1 : 0);
-          cameraPath(camera, [[C.fire, [AE.x - 3.0, 2.6, 30], [AE.x - 1.0, 9.5, AE.z]], [TF, [AE.x - 3.0, 2.6, 29.5], [AE.x - 1.0, 9.5, AE.z]], [C.chariot, [AE.x - 4.0, 3.2, 35], [AE.x - 1.0, 9.0, AE.z]]], t);
+          cameraPath(camera, [[C.fire, [AE.x - 3.0, 2.4, 44], [AE.x - 1.0, 12.5, AE.z]], [TF, [AE.x - 3.0, 2.4, 43.5], [AE.x - 1.0, 12.5, AE.z]], [C.chariot, [AE.x - 3.6, 3.0, 48], [AE.x - 1.0, 11.5, AE.z]]], t);
           camera.position.x += Math.sin(t * 47) * 0.12 * shake; camera.position.y += Math.sin(t * 61) * 0.1 * shake;
         }
         handheld(camera, t, 0.004);
@@ -356,7 +360,7 @@ export default function build({ THREE, lib, meta }) {
         horses.forEach((h, j) => h.legs.forEach((l, k) => (l.rotation.x = Math.sin(t * 9 + k * 1.3 + j * 0.6) * 0.75)));
         wheels.forEach((w) => (w.children.forEach((c) => (c.rotation.x = 0)), w.rotation.x = t * 6));
         prophet.parts.arms.forEach((a, s) => (a.rotation.x = -0.9 + Math.sin(t * 3 + s) * 0.05));
-        vortU.chPos.value.copy(chariot.position); vortU.op.value = ramp(t, CH_T0 - 0.2, 1.0);
+        vortU.chPos.value.copy(chariot.position); vortU.op.value = ramp(t, CH_T0 - 0.2, 1.0); dustW.u.opacity.value = 0.6; vortex.rotation.y = 0;
         const fk = ramp(t, CH_T0, 0.6); fireSkinU.k.value = fk;
         // плащ: срывается и, кружась, падает к Елисею
         const cl = clamp((tau - 3.6) / 3.6);
@@ -372,10 +376,10 @@ export default function build({ THREE, lib, meta }) {
         elisha.parts.body.rotation.x = -0.12 * reach;
         // камера: от Елисея — низко, вверх за колесницей
         S.fadeOut = 1.2;
-        const camP = V(EP.x - 2.2, EP.y + 1.3, EP.z + 4.2);
+        const camP = V(EP.x - 1.0, EP.y + 1.2, EP.z + 3.2);
         const lk = chPath(Math.max(tau - 0.4, 0), V()).lerp(V(WC.x, WC.y + 20, WC.z), 0.25);
         lk.y = lerp(lk.y, EP.y + 6, 0.15);
-        camera.position.copy(camP).add(V(-tau * 0.5, tau * 0.25, tau * 0.9)); camera.lookAt(lk);
+        camera.position.copy(camP).add(V(-tau * 0.25, tau * 0.12, tau * 0.45)); camera.lookAt(lk);
         S.post.exposure = Lk.exp; S.post.bloom = 0.75; S.post.bloomThreshold = 0.75;
         handheld(camera, t, 0.006);
       }
