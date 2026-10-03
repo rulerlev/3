@@ -75,7 +75,7 @@ export default function build({ THREE, lib, meta }) {
   const WAV = [[1, 0.3, 38, 1.0, 6], [-0.4, 1, 21, 0.6, 4.6], [0.7, -0.6, 11, 0.32, 3.4], [-0.9, -0.2, 6, 0.18, 2.5], [0.2, 0.9, 3.1, 0.08, 1.8]].map(([dx, dz, wl, a, sp]) => { const l = Math.hypot(dx, dz); return [dx / l, dz / l, 2 * Math.PI / wl, a, sp]; });
   const waveY = (x, z, t, amp) => { let y = 0; for (const [dx, dz, k, a, sp] of WAV) y += amp * a * Math.sin(k * (dx * x + dz * z - sp * t)); return y; };
   const ship = new THREE.Group(); gB.add(ship);
-  const shipWood = new THREE.MeshStandardMaterial({ color: '#4a3020', roughness: 0.9 });
+  const shipWood = new THREE.MeshStandardMaterial({ color: '#3a2618', roughness: 0.9 });
   { const hg = new THREE.BoxGeometry(9, 2, 3, 12, 2, 4); const p = hg.attributes.position;
     for (let i = 0; i < p.count; i++) { let x = p.getX(i), y = p.getY(i), z = p.getZ(i); const e = Math.abs(x) / 4.5; z *= (1 - Math.pow(e, 2.2) * 0.85) * (y < 0 ? 0.6 : 1); y += Math.pow(e, 2) * 1.1; p.setXYZ(i, x, y, z); } hg.computeVertexNormals();
     mesh(hg, shipWood, ship, 0, 0.4, 0);
@@ -83,7 +83,7 @@ export default function build({ THREE, lib, meta }) {
     const sailG = new THREE.PlaneGeometry(4.4, 4, 8, 8); { const q = sailG.attributes.position; for (let i = 0; i < q.count; i++) q.setZ(i, Math.cos(q.getX(i) / 2.2 * 1.5) * 0.7); sailG.computeVertexNormals(); }
     const sail = mesh(sailG, new THREE.MeshStandardMaterial({ color: '#8a7a64', roughness: 1, side: THREE.DoubleSide }), ship, 0.3, 5.6, 0.45); sail.rotation.y = Math.PI / 2 + 0.3;
     for (let i = 0; i < 3; i++) { const s = lib.figure({ height: 1.6, robe: '#2a2018', skin: '#5a3a2a', hood: true, seed: 30 + i }); s.position.set(-2.4 + i * 1.6, 1.3, (i - 1) * 0.5); s.rotation.y = 1.2 + i; ship.add(s); }
-    const lamp = lib.glow('#ffa040', 3.2, 0.9); lamp.position.set(-3.6, 2.6, 0); ship.add(lamp); const lampL = new THREE.PointLight('#ffa050', 14, 18, 1.5); lampL.position.set(-3.4, 3, 0.5); ship.add(lampL); }
+    const lamp = lib.glow('#ffa040', 3.2, 0.9); lamp.position.set(-3.6, 2.6, 0); ship.add(lamp); const lampL = new THREE.PointLight('#ffa050', 5, 12, 1.6); lampL.position.set(-3.4, 3, 0.5); ship.add(lampL); }
   const jonahS = lib.figure({ height: 1.7, robe: '#5a4a38', skin: '#7a5a40', hood: false, seed: 41 }); gB.add(jonahS);
   const splash = []; { const tx = lib.cloudTexture(55, 128); for (let i = 0; i < 8; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, color: '#c8d8e0', transparent: true, opacity: 0, depthWrite: false })); gB.add(sp); splash.push(sp); } }
   function makeRain({ count, box: bx, center, seed, speed, color, opacity, slant }) {
@@ -135,7 +135,7 @@ export default function build({ THREE, lib, meta }) {
 
   // ================= C1. Золотой истукан =================
   const gC = new THREE.Group(); scene.add(gC);
-  const hC = (x, z) => fbm(x * 0.01, z * 0.01, 3) * 3 * smooth(30, 120, Math.hypot(x, z + 60));
+  const hC = (x, z) => fbm(x * 0.01, z * 0.01, 3) * 3 * smooth(110, 220, Math.hypot(x, z + 60));
   gC.add(lib.terrain({ size: 900, seg: 120, center: [0, -200], heightFn: hC, colorFn: (x, z) => col('#a07a4c').lerp(col('#7a5a3a'), clamp(noise2(x * 0.03, z * 0.03) + 0.5)) }));
   const IDZ = -70;
   box(gC, 18, 10, 18, 0, -0.5, IDZ, new THREE.MeshStandardMaterial({ color: '#8a6a44', roughness: 0.9 }));
@@ -153,7 +153,7 @@ export default function build({ THREE, lib, meta }) {
     const ry = Math.atan2(-x, IDZ - z); bowers.setMatrixAt(n, tmpM.compose(tmpP.set(x, hC(x, z) - 0.1, z), tmpQ.setFromEuler(eul.set(1.15 + r() * 0.2, ry, 0, 'YXZ')), tmpS.setScalar(0.9 + r() * 0.2)));
     bowers.setColorAt(n, col('#5a4430').multiplyScalar(0.6 + r() * 0.8)); n++; } }
   gC.add(bowers);
-  const youths = [0, 1, 2].map((i) => { const f = lib.figure({ height: 1.75, robe: ['#e8dcc8', '#c8b090', '#d8c8a8'][i], skin: '#8a5a3c', hood: false, seed: 71 + i }); f.position.set(-1.0 + i * 1.3, hC(0, IDZ + 80), IDZ + 80 - (i % 2) * 0.4); f.rotation.y = Math.PI; gC.add(f); return f; });
+  const youths = [0, 1, 2].map((i) => { const f = lib.figure({ height: 1.75, robe: ['#e8dcc8', '#c8b090', '#d8c8a8'][i], skin: '#8a5a3c', hood: false, seed: 71 + i }); f.position.set(-1.0 + i * 1.3, hC(0, IDZ + 86), IDZ + 86 - (i % 2) * 0.4); f.rotation.y = Math.PI; gC.add(f); return f; });
   const dustC = lib.motes({ count: 600, box: [80, 20, 80], center: [0, 6, IDZ + 50], size: 3, color: '#ffd8a0', speed: 0.2, opacity: 0.5, seed: 62 }); gC.add(dustC);
 
   // ================= C2. Огненная печь =================
@@ -164,9 +164,9 @@ export default function build({ THREE, lib, meta }) {
   const OW = 8, OH = 9;
   box(gF, 15, 22, 3, -(OW / 2 + 7.5), 0, 0, brickM); box(gF, 15, 22, 3, OW / 2 + 7.5, 0, 0, brickM); box(gF, OW, 22 - OH, 3, 0, OH, 0, brickM);
   { const dome = mesh(new THREE.SphereGeometry(16, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), brickM, gF, 0, 20, -14); dome.scale.set(1.2, 0.6, 1); }
-  const inner = new THREE.MeshStandardMaterial({ map: brickTex, color: '#ff8a40', emissive: '#ff5a10', emissiveMap: brickTex, emissiveIntensity: 0.4, roughness: 1, side: THREE.BackSide });
+  const inner = new THREE.MeshStandardMaterial({ map: brickTex, color: '#ff8a40', emissive: '#ff5a10', emissiveMap: brickTex, emissiveIntensity: 0.25, roughness: 1, side: THREE.BackSide });
   mesh(new THREE.BoxGeometry(26, 20, 22), inner, gF, 0, 10, -12.5);
-  const furnFires = [[-5, -4, 3.5, 900, 7], [5, -6, 3.5, 900, 7], [0, -14, 6, 1300, 10], [-9, -12, 3, 600, 8], [9, -12, 3, 600, 8], [0, -1.0, 4, 400, 2.2]].map(([x, z, rad, n, h], i) => { const f = lib.fire({ count: n, radius: rad, height: h, size: 70, seed: 81 + i, intensity: i === 5 ? 0.3 : 0.42 }); f.position.set(x, 0, z); gF.add(f); return f; });
+  const furnFires = [[-5, -11, 3.5, 700, 9], [5, -11, 3.5, 700, 9], [0, -15, 6, 900, 11], [-10, -8, 2.5, 400, 8], [10, -8, 2.5, 400, 8], [0, -4.5, 5, 500, 1.4]].map(([x, z, rad, n, h], i) => { const f = lib.fire({ count: n, radius: rad, height: h, size: 45, seed: 81 + i, intensity: i === 5 ? 0.35 : 0.3 }); f.position.set(x, 0, z); gF.add(f); return f; });
   const walkers = [0, 1, 2, 3].map((i) => { const f = lib.figure({ height: 1.8, robe: i === 3 ? '#fff4e0' : '#1a0c06', skin: i === 3 ? '#fff0d8' : '#1a0c06', hood: i === 3, seed: 91 + i, glow: i === 3 ? 1.2 : 0, emissive: i === 3 ? '#ffe8c0' : '#000', belt: i === 3 ? '#ffe0a0' : '#0a0604' });
     if (i === 3) { f.parts.robeMat.emissiveIntensity = 1.6; f.traverse((o) => { if (o.isMesh && o.material !== f.parts.robeMat) o.material = f.parts.robeMat; }); }
     f.position.set(-4 + i * 2.6, 0, -7); gF.add(f); return f; });
@@ -193,7 +193,7 @@ export default function build({ THREE, lib, meta }) {
   mesh(rimG, new THREE.MeshStandardMaterial({ color: '#2a2a28', roughness: 1 }), gD, 0, 13, 0);
   const daniel = lib.figure({ height: 1.75, robe: '#d8ccb4', skin: '#8a5a3c', hood: false, seed: 121, belt: '#6a4a2a' });
   daniel.position.set(0, -0.48, 0); daniel.rotation.y = 0.4; daniel.parts.body.rotation.x = 0.08;
-  daniel.parts.arms[0].rotation.set(-2.3, 0, -0.35); daniel.parts.arms[1].rotation.set(-2.3, 0, 0.35); gD.add(daniel);
+  daniel.parts.head.position.z = 0.06; gD.add(daniel);
   const lionM = new THREE.MeshStandardMaterial({ color: '#b88450', roughness: 0.85 }), maneM = new THREE.MeshStandardMaterial({ color: '#5a3418', roughness: 1 });
   const sph = new THREE.SphereGeometry(1, 16, 10), legG = new THREE.CylinderGeometry(0.12, 0.09, 0.84, 8).translate(0, -0.42, 0), maneG = new THREE.IcosahedronGeometry(0.6, 2);
   function lion(seed) {
@@ -211,18 +211,18 @@ export default function build({ THREE, lib, meta }) {
     const legs = [[0.6, 0.2], [0.6, -0.2], [-0.62, 0.2], [-0.62, -0.2]].map(([x, z]) => { const pv = new THREE.Group(); pv.position.set(x, 0.86, z); inner.add(pv); mesh(legG, lionM, pv); const paw = mesh(sph, lionM, pv, 0.05, -0.84, 0); paw.scale.set(0.14, 0.07, 0.12); return pv; });
     const tail = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-0.95, 0.95, 0), new THREE.Vector3(-1.45, 0.7, 0), new THREE.Vector3(-1.75, 0.3, 0.1)]), 10, 0.04, 5), lionM); inner.add(tail);
     const tuft = mesh(sph, maneM, inner, -1.77, 0.27, 0.1); tuft.scale.setScalar(0.1);
-    g.parts = { legs, head, inner, tail }; g.scale.setScalar(0.92 + r() * 0.12); return g;
+    g.parts = { legs, head, inner, tail }; g.scale.setScalar(0.78 + r() * 0.1); return g;
   }
   const lions = [0, 1, 2, 3, 4].map((i) => { const L = lion(131 + i); gD.add(L); return Object.assign(L, { a0: i / 5 * Math.PI * 2 + i * 0.3, R: 2.9 + (i % 3) * 0.9, w: 0.32 + (i % 2) * 0.1, dir: i % 2 ? 1 : -1 }); });
   const moonBeam = lib.lightBeam({ radiusTop: 3, radiusBottom: 5, length: 15, color: '#9ab8e8', opacity: 0.1 }); moonBeam.position.set(-3.5, 14, -1); moonBeam.rotation.z = 0.25; gD.add(moonBeam);
   const moonSpot = new THREE.SpotLight('#a8c0ff', 60, 40, 0.38, 0.6, 1.2); moonSpot.position.set(-4, 16, -1); moonSpot.target.position.set(0, 0, 0); gD.add(moonSpot, moonSpot.target);
   const angelU = { op: { value: 0 }, time: { value: 0 } };
-  const angelBeam = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 3.2, 26, 48, 1, true).translate(0, 13, 0), new THREE.ShaderMaterial({ uniforms: angelU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  const angelBeam = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 2.1, 26, 48, 1, true).translate(0, 13, 0), new THREE.ShaderMaterial({ uniforms: angelU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: `varying vec2 vUv; varying float vE; void main(){ vUv = uv; vec4 mv = modelViewMatrix*vec4(position,1.); vec3 n = normalize(normalMatrix*normal); vE = pow(abs(dot(n, normalize(-mv.xyz))), 1.5); gl_Position = projectionMatrix*mv; }`,
     fragmentShader: lib.GLSL_NOISE + `uniform float op, time; varying vec2 vUv; varying float vE; void main(){ float along = mix(1., .15, smoothstep(0., .7, vUv.y)) * smoothstep(1., .85, vUv.y);
       float n = .75 + .25*vnoise(vec2(vUv.x*14., vUv.y*4. - time*.4)); gl_FragColor = vec4(vec3(1.,.86,.6)*vE*along*n*op, 1.); }` }));
   gD.add(angelBeam);
-  const angelPool = lib.glow('#ffe0a8', 9, 0); angelPool.position.set(0, 0.6, 0); gD.add(angelPool);
+  const angelPool = lib.glow('#ffe0a8', 6, 0); angelPool.position.set(0, 0.6, 0); gD.add(angelPool);
   const angelMotes = lib.motes({ count: 400, box: [5, 14, 5], center: [0, 7, 0], size: 2, color: '#ffe8b8', speed: 0.25, kind: 'rise', opacity: 0, seed: 141 }); gD.add(angelMotes);
   const angelL = new THREE.PointLight('#ffd8a0', 0, 18, 1.4); angelL.position.set(0, 4, 0); gD.add(angelL);
   const moonL = new THREE.DirectionalLight('#9ab8ff', 1.2); moonL.position.set(-8, 30, 4); moonL.target.position.set(0, 0, 0); gD.add(moonL, moonL.target);
@@ -247,7 +247,7 @@ export default function build({ THREE, lib, meta }) {
   const braziers = []; for (let i = 0; i < 6; i++) [-1, 1].forEach((s) => { const z = 34 - i * 12.8; const x = s * 4.4; box(gE, 0.4, 1.4, 0.4, x, 0, z, gold); const f = lib.fire({ count: 90, radius: 0.35, height: 1.2, size: 12, seed: 151 + i * 2 + (s > 0), intensity: 0.8 }); f.position.set(x, 1.5, z); gE.add(f);
     const gl = lib.glow('#ff9a40', 3.5, 0.45); gl.position.set(x, 2.2, z); gE.add(gl); braziers.push(gl); });
   const hallL1 = new THREE.PointLight('#ffa050', 30, 40, 1.4); hallL1.position.set(0, 5, 18); gE.add(hallL1);
-  const hallL2 = new THREE.PointLight('#ffb060', 40, 40, 1.4); hallL2.position.set(0, 7, -18); gE.add(hallL2);
+  const hallL2 = new THREE.PointLight('#ffb060', 60, 40, 1.4); hallL2.position.set(0, 6, -20); gE.add(hallL2);
   const shafts = [0, 1, 2, 3].map((i) => { const b = lib.lightBeam({ radiusTop: 1.2, radiusBottom: 3.5, length: 30, color: '#ffd8a0', opacity: 0.16 }); b.position.set(-14, 22, 30 - i * 16); b.rotation.set(0, 0, 0.6); gE.add(b); return b; });
   const dustE = lib.motes({ count: 600, box: [24, 18, 70], center: [0, 9, 5], size: 1.6, color: '#ffd8a0', speed: 0.15, opacity: 0.6, seed: 161 }); gE.add(dustE);
   // трон и царь
@@ -265,8 +265,8 @@ export default function build({ THREE, lib, meta }) {
   // царица
   const queen = lib.figure({ height: 1.72, robe: '#5a2a7a', skin: '#9a6a4a', hood: true, hoodColor: '#d8b878', seed: 191, belt: '#e0b04a' }); gE.add(queen);
   { const crown = new THREE.Group(); crown.position.y = 1.8; queen.add(crown); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; mesh(new THREE.ConeGeometry(0.025, 0.1, 4), gold, crown, Math.cos(a) * 0.12, 0, Math.sin(a) * 0.12); } }
-  const trainG = new THREE.PlaneGeometry(1.0, 3.2, 4, 8); trainG.translate(0, -1.6, 0); trainG.rotateX(Math.PI / 2 - 0.05);
-  { const p = trainG.attributes.position; for (let i = 0; i < p.count; i++) { const z = p.getZ(i); p.setX(i, p.getX(i) * (1 + Math.max(0, -z) * 0.35)); } }
+  const trainG = new THREE.PlaneGeometry(0.6, 2.2, 4, 8); trainG.translate(0, -1.1, 0); trainG.rotateX(Math.PI / 2 - 0.05);
+  { const p = trainG.attributes.position; for (let i = 0; i < p.count; i++) { const z = p.getZ(i); p.setX(i, p.getX(i) * (1 + Math.max(0, -z) * 0.45)); } }
   const train = mesh(trainG, new THREE.MeshStandardMaterial({ color: '#4a1a6a', roughness: 0.8, side: THREE.DoubleSide }), queen, 0, 1.25, -0.2);
   train.rotation.x = 0; // шлейф лежит на полу за спиной
   { const p = trainG.attributes.position; for (let i = 0; i < p.count; i++) { const z = p.getZ(i); p.setY(i, p.getY(i) - Math.min(1.25, (-z) * 1.1) + 0.0); } trainG.computeVertexNormals(); }
@@ -311,7 +311,7 @@ export default function build({ THREE, lib, meta }) {
         jonahS.visible = t < T_THROW + 0.9;
         const sk = clamp((t - T_THROW - 0.7) / 1.3); splash.forEach((sp, i) => { const a = i / 8 * Math.PI * 2; sp.position.set(0.6 + 2.4 + Math.cos(a) * sk * 1.2, waveY(3, 4, t, 1.6) + 0.4 + sk * 1.6 * (0.5 + (i % 3) * 0.3), 0.9 + 3.2 + Math.sin(a) * sk * 1.2); const s = 1 + sk * 2.5; sp.scale.set(s, s, 1); sp.material.opacity = t > T_THROW + 0.7 ? (1 - sk) * 0.7 : 0; });
         P.flash = clamp(fl) * 0.12; P.exposure = 1.0 + fl * 0.2; P.sat = 0.8; P.tint = [0.92, 0.98, 1.06];
-        cameraPath(camera, [[C.jonah, [-11, 3.2, 13], [0, 2.6, 0]], [T_UNDER, [-8, 2.8, 11.5], [1.5, 2.2, 1.5]]], t);
+        cameraPath(camera, [[C.jonah, [-5, 3.4, 21], [0, 3.0, 0]], [T_UNDER, [-2.5, 3.0, 17], [1.5, 2.4, 1.5]]], t);
         camera.position.y += waveY(-12, 16, t, 1.6) * 0.5;
         handheld(camera, t * 1.6, 0.012);
       } else if (t < C.furnace) { // ---- под водой
@@ -338,7 +338,7 @@ export default function build({ THREE, lib, meta }) {
         scene.fog.color.set('#c09870'); scene.fog.density = 0.0025;
         hemi.color.set('#b0c0e0'); hemi.groundColor.set('#6a4a30'); hemi.intensity = 0.7; sun.color.set('#ffe0b0'); sun.intensity = 2.6; sun.position.set(300, 90, -180 + IDZ); sun.target.position.set(0, 0, IDZ);
         P.exposure = 0.92; P.bloom = 0.55; P.bloomThreshold = 0.82;
-        cameraPath(camera, [[C.furnace, [2.6, 1.3, IDZ + 89], [0, 11, IDZ]], [T_FURN, [1.8, 1.5, IDZ + 86.5], [0, 15, IDZ]]], t);
+        cameraPath(camera, [[C.furnace, [2.6, 1.5, IDZ + 96], [0, 15, IDZ]], [T_FURN, [1.8, 1.6, IDZ + 93.5], [0, 18, IDZ]]], t);
         handheld(camera, t, 0.003);
       } else if (t < C.lions) { // ---- печь
         show(gF); sky.visible = true;
@@ -347,7 +347,7 @@ export default function build({ THREE, lib, meta }) {
         hemi.color.set('#6a3a20'); hemi.groundColor.set('#100804'); hemi.intensity = 0.4; sun.intensity = 0;
         const fl = 0.85 + 0.15 * Math.sin(t * 13) * Math.sin(t * 7.7);
         furnL.intensity = 70 * fl; mouthGlow.material.opacity = 0.18 + 0.05 * fl;
-        walkers.forEach((w, i) => { const ph = t * 0.55 + i * 0.27; w.position.set(-3.6 + i * 2.3 + Math.sin(t * 0.25 + i) * 0.4, 0, -6.5 + Math.sin(t * 0.3 + i * 2) * 0.6); w.rotation.y = 0.9 + Math.sin(t * 0.2) * 0.1; lib.walkPose(w, ph * 1.2, 0.8); });
+        walkers.forEach((w, i) => { const ph = t * 0.55 + i * 0.27; w.position.set(-3.4 + i * 2.2 + Math.sin(t * 0.25 + i) * 0.4, 0, -5.5 + Math.sin(t * 0.3 + i * 2) * 0.5); w.rotation.y = 0.9 + Math.sin(t * 0.2) * 0.1; lib.walkPose(w, ph * 1.2, 0.8); });
         fourthGlow.position.set(walkers[3].position.x, 1.4, walkers[3].position.z); fourthGlow.material.opacity = 0.55 + 0.1 * Math.sin(t * 2);
         P.exposure = 0.9; P.bloom = 0.6; P.bloomThreshold = 0.82; P.contrast = 1.1;
         cameraPath(camera, [[T_FURN, [2.5, 2.2, 24], [0, 3.6, -5]], [C.lions, [0.8, 1.8, 11.5], [0, 2.2, -6]]], t);
@@ -360,8 +360,8 @@ export default function build({ THREE, lib, meta }) {
           setSky('#05091a', '#1a2440', '#05060a', [-0.3, 0.7, -0.6], '#d8e4ff', 0.02, 0.4, 1.3);
           scene.fog.color.set('#0a1020'); scene.fog.density = 0.012;
           hemi.color.set('#4a5a8a'); hemi.groundColor.set('#0a0a0c'); hemi.intensity = 0.3 + ang * 0.1; sun.intensity = 0; moonL.intensity = 0.35;
-          angelU.op.value = ang * 0.75; angelPool.material.opacity = ang * 0.5; angelL.intensity = ang * 25; angelMotes.u.opacity.value = ang * 0.8;
-          daniel.parts.arms[0].rotation.set(lerp(-2.3, -2.6, ang), 0, -0.35); daniel.parts.arms[1].rotation.set(lerp(-2.3, -2.6, ang), 0, 0.35);
+          angelU.op.value = ang * 0.2; angelPool.material.opacity = ang * 0.3; angelL.intensity = ang * 14; angelMotes.u.opacity.value = ang * 0.8;
+          daniel.parts.arms[0].rotation.set(lerp(-0.75, -1.9, ang), 0, lerp(0.5, -0.3, ang)); daniel.parts.arms[1].rotation.set(lerp(-0.75, -1.9, ang), 0, lerp(-0.5, 0.3, ang));
           const lie = ramp(t, T_LIE, 1.8);
           lions.forEach((L, i) => {
             const T0 = C.lions, D = 1.6; const tt = Math.min(t, T_LIE) - T0; const extra = t > T_LIE ? D * (1 - Math.exp(-(t - T_LIE) / D)) : 0;
@@ -382,7 +382,7 @@ export default function build({ THREE, lib, meta }) {
             cameraPath(camera, [[C.angel, [8.4, 1.5, 3.6], [0, 2.9, 0]], [C.esther, [7.4, 1.25, 3.1], [0, 3.2, 0]]], t);
             S.quote.y = 0.34;
           }
-          P.exposure = 1.0; P.bloom = 0.6 + ang * 0.15; P.bloomThreshold = 0.72; P.sat = 0.85; P.tint = [0.95, 0.98, 1.05];
+          P.exposure = 1.0; P.bloom = 0.6; P.bloomThreshold = 0.75; P.sat = 0.85; P.tint = [0.95, 0.98, 1.05];
           handheld(camera, t, 0.003);
         } else { // ---- Есфирь
           show(gE); sky.visible = false;
