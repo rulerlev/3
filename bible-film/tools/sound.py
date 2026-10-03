@@ -82,6 +82,9 @@ def boomsub(t, x, gain=1.0):
     i, a, m = _span(t, len(x))
     if m > 0: lfe[i:i + m] += x[a:a + m] * gain
 
+DUCK_DEPTH, DUCK_SENS, DIP = float(os.environ.get('DUCK_DEPTH', 0.8)), 0.04, float(os.environ.get('DIP', 0.6))
+BG_GAIN = float(os.environ.get('BG_GAIN', 0.7))
+
 # ---------- инструменты ----------
 def pad(notes, dur, bright=1200, amp=0.06, attack=2.5, release=3.0, detune=0.12, choir=False):
     n = int(dur * SR); t = tt(n); x = np.zeros(n)
@@ -565,14 +568,39 @@ speech = dia + quo
 envv = np.convolve(np.abs(speech), np.ones(2400) / 2400, 'same')
 att = np.zeros_like(envv); v = 0.0; step = 480; dn = np.exp(-step / (0.7 * SR))
 for i in range(0, N, step): x = envv[i]; v = x if x > v else v * dn; att[i:i + step] = v
-duck = (1 - 0.45 * np.clip(att / 0.07, 0, 1)).astype(np.float32)
-for ch in (L, R, LS, RS): out[ch] *= duck
-out[C] *= duck
+LOOK = int(0.15 * SR)  # упреждение: фон уходит до первого слога
+dk = np.clip(np.concatenate([att[LOOK:], np.zeros(LOOK)]) / DUCK_SENS, 0, 1)
+dk = np.maximum(dk, np.clip(att / DUCK_SENS, 0, 1)).astype(np.float32)
+duck = (1 - DUCK_DEPTH * dk).astype(np.float32)
+for ch in (L, R, C, LS, RS):
+    out[ch] *= duck
+    out[ch] -= bp(out[ch], 800, 4000).astype(np.float32) * (DIP * dk)  # «вырез» в полосе речи только под голосом
+out[[L, R, C, LS, RS]] *= BG_GAIN
+bg = out.copy()  # всё, кроме голоса — для проверки разборчивости
 # голос: рассказчик — центр (+лёгкий фантом в L/R для «тела»); цитаты — центр + собор по всему залу
 out[C] += dia * 1.0; out[L] += dia * 0.08; out[R] += dia * 0.08
 out[C] += quo * 0.95; out[L] += quo * 0.22; out[R] += quo * 0.22
 for k, ch in enumerate(RING_CH): out[ch] += conv(quo, cath[k]) * (0.28 if ch in (LS, RS) else 0.2)
-out[LFE] = lfe * duck * 0.9
+out[LFE] = lfe * duck * 0.9; bg[LFE] = out[LFE]
+# ---------- разборчивость: голос vs фон по каждой реплике (в стерео-даунмиксе) ----------
+def dmx(o): return 0.5 * ((o[L] + 0.707 * o[C] + 0.707 * o[LS]) + (o[R] + 0.707 * o[C] + 0.707 * o[RS]))
+vb, bb = dmx(out) - dmx(bg), dmx(bg)
+def band(x): return bp(x, 300, 4000)  # полоса разборчивости речи
+vb_, bb_ = band(vb), band(bb)
+rep = []
+for sc in TL['scenes']:
+    for l in sc['lines']:
+        a, b = int((sc['start'] + l['start']) * SR), int((sc['start'] + l['end']) * SR)
+        sv, sb = vb_[a:b], bb_[a:b]; m = np.abs(sv) > 0.005
+        if m.sum() < SR * 0.2: continue
+        snr = 10 * np.log10(np.mean(sv[m] ** 2) / (np.mean(sb[m] ** 2) + 1e-12))
+        rep.append((snr, sc['id'], l['t'][:50]))
+rep.sort(); snrs = np.array([r[0] for r in rep])
+print(f'SNR голос/фон, дБ: медиана {np.median(snrs):.1f}, мин {snrs.min():.1f}, реплик < 10 дБ: {(snrs < 10).sum()} из {len(snrs)}')
+for r in rep[:6]: print(f'  {r[0]:5.1f} дБ  {r[1]:12s} {r[2]}')
+if os.environ.get('SNR_ONLY'): sys.exit(0)
+del bg, vb, bb, vb_, bb_, mus, amb, fx, dia, quo, wetL, wetR, wetSL, wetSR, speech, envv, att
+import gc; gc.collect()
 for ch in range(6): out[ch] = hp(out[ch], 20 if ch == LFE else 30).astype(np.float32)
 
 # ---------- мастеринг ----------
@@ -587,13 +615,13 @@ def limiter(x, ceil=0.93):
     return x * sm[None, :]
 meter = pyln.Meter(SR)
 # 5.1: −20 LUFS (кинотеатральный диапазон, громкие удары остаются громкими)
-o51 = out.copy(); o51[LFE] *= 1.0
+o51 = out; out = None
 lufs = meter.integrated_loudness(np.stack([o51[L], o51[R], o51[C], o51[LS], o51[RS]]).T)
-o51 *= 10 ** ((-20 - lufs) / 20); o51 = limiter(o51, 0.93)
-# стерео: ITU даунмикс + «ширина» тылов, −15 LUFS для телефона/наушников
-st = np.stack([out[L] + 0.707 * out[C] + 0.707 * out[LS] + 0.3 * out[RS] * -0.3 + 0.45 * out[LFE],
-               out[R] + 0.707 * out[C] + 0.707 * out[RS] + 0.3 * out[LS] * -0.3 + 0.45 * out[LFE]])
-lufs2 = meter.integrated_loudness(st.T); st *= 10 ** ((-15 - lufs2) / 20); st = limiter(st, 0.9)
+# стерео: ITU даунмикс + «ширина» тылов, −15 LUFS для телефона/наушников (считаем до лимитера 5.1)
+st = np.stack([o51[L] + 0.707 * o51[C] + 0.707 * o51[LS] - 0.09 * o51[RS] + 0.45 * o51[LFE],
+               o51[R] + 0.707 * o51[C] + 0.707 * o51[RS] - 0.09 * o51[LS] + 0.45 * o51[LFE]]).astype(np.float32)
+lufs2 = meter.integrated_loudness(st.T); st *= 10 ** ((-15 - lufs2) / 20); st = limiter(st, 0.9).astype(np.float32)
+o51 *= 10 ** ((-20 - lufs) / 20); o51 = limiter(o51, 0.93).astype(np.float32)
 print('5.1 LUFS', round(meter.integrated_loudness(np.stack([o51[L], o51[R], o51[C], o51[LS], o51[RS]]).T), 1), 'peak', round(float(np.abs(o51).max()), 3))
 print('stereo LUFS', round(meter.integrated_loudness(st.T), 1), 'peak', round(float(np.abs(st).max()), 3))
 def write(path, x):
