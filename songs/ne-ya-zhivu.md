@@ -49,12 +49,12 @@ Russian modern worship, anthemic pop-rock ballad, warm male lead vocal, E minor,
 [Chorus: full band, anthemic]
 Уже не я живу —
 Живёт во мне Христос!
-Я со Христом распят
-И с Ним воскрес!
+Он умер за меня
+И вновь воскрес!
 Уже не я живу —
 Живёт во мне Христос!
-Я со Христом распят
-И с Ним воскрес!
+Он умер за меня
+И вновь воскрес!
 
 [Verse 2]
 Мне Твоей благодати
@@ -75,12 +75,12 @@ Russian modern worship, anthemic pop-rock ballad, warm male lead vocal, E minor,
 [Chorus]
 Уже не я живу —
 Живёт во мне Христос!
-Я со Христом распят
-И с Ним воскрес!
+Он умер за меня
+И вновь воскрес!
 Уже не я живу —
 Живёт во мне Христос!
-Я со Христом распят
-И с Ним воскрес!
+Он умер за меня
+И вновь воскрес!
 
 [Instrumental Break]
 
@@ -103,12 +103,12 @@ Russian modern worship, anthemic pop-rock ballad, warm male lead vocal, E minor,
 [Final Chorus: biggest, choir]
 Уже не я живу —
 Живёт во мне Христос!
-Я со Христом распят
-И с Ним воскрес!
+Он умер за меня
+И вновь воскрес!
 Уже не я живу —
 Живёт во мне Христос!
-Я со Христом распят
-И с Ним воскрес!
+Он умер за меня
+И вновь воскрес!
 
 [Outro: quiet, piano and pads]
 Я подвигом добрым подвизался,
