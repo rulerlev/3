@@ -129,5 +129,5 @@ Russian modern worship, anthemic pop-rock ballad, warm male lead vocal, E minor,
 | Куплет | Em – D – C – D – Em (по строке на аккорд) |
 | Пред-припев | C – D – Em – D / C – D – G – D |
 | Припев | C – D – Em – D (×2), в конце Em |
-| Бридж | C – D – Em – D (последний бридж на тон выше: Dm → F#m, т.е. в F#m) |
+| Бридж | C – D – Em – D (последний бридж и финальный припев — на тон выше, в F#m: D – E – F#m – E) |
 | Аутро | C – D – Em (затихая) |
